@@ -18,22 +18,24 @@
 #define left_robot 1
 #define right_robot 2
 
-uint8_t stack[grid_size * grid_size][2];
+int8_t stack[grid_size * grid_size][3];
 volatile bool dma_complete;
 volatile uint16_t adc_value[4];
-uint8_t x, y, direction;
+int8_t x, y, direction;
 
 void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf);
 
 void start_fill() {
-	memset(visited, 0, sizeof(visited));
+	memset(visited, false, sizeof(visited));
 	memset(maze, 0, sizeof(maze));
+	current_speed = 0;
 	stack[0][0] = starting_coordinates[0];
 	stack[0][1] = starting_coordinates[1];
-	dma_complete = 0;
 	visited[starting_coordinates[0]][starting_coordinates[1]] = true;
+	dma_complete = 0;
 	int16_t i = 1;
-	x = y = 0;
+	x = -1;
+	y = 0;
 	direction = west;
 	bool front, left, right;
 	go_straight(27, 0);
@@ -42,11 +44,41 @@ void start_fill() {
 		front = left = right = true;
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 8);
 		while(dma_complete == 0);
+		HAL_Delay(10);
+		visited[y][x] = true;
 		front = adc_value[0] < pivot_fornt_right;
 		right = adc_value[1] < pivot_right;
 		left  = adc_value[2] < pivot_left;
 		set_wall(left, right, front);
-		if()
+		switch(direction){
+			case west:
+				x--;
+			case east:
+				x++;
+			case north:
+				y--;
+			case south:
+				y++;
+		}
+		if((left && right) || (left && front) || (right && front)){
+			i++;
+			stack[i][0] = x;
+			stack[i][1] = y;
+			switch(direction){
+				case west:
+					x--;
+				case east:
+					x++;
+				case north:
+					y--;
+				case south:
+					y++;
+			}
+		} else if(left || right || front){
+
+		} else {
+
+		}
 	}
 }
 
@@ -114,21 +146,21 @@ void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf){
 			break;
 		case south:
 			if(rbl){
-				maze[y + 1][x] = right_wall;
+				maze[y + 1][x] |= right_wall;
 				if(x + 1 < grid_size){
-					maze[y + 1][x + 1] = left_wall;
+					maze[y + 1][x + 1] |= left_wall;
 				}
 			}
 			if(rbr){
-				maze[y + 1][x] = left_wall;
+				maze[y + 1][x] |= left_wall;
 				if(x - 1 > 0){
-					maze[y + 1][x - 1] = right_wall;
+					maze[y + 1][x - 1] |= right_wall;
 				}
 			}
 			if(rbf){
-				maze[y + 1][x] = bottom_wall;
+				maze[y + 1][x] |= bottom_wall;
 				if(y + 2 < grid_size){
-					maze[y + 2][x] = top_wall;
+					maze[y + 2][x] |= top_wall;
 				}
 			}
 	}

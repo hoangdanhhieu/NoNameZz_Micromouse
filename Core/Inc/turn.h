@@ -11,6 +11,7 @@
 #include <math.h>
 #include "stm32f1xx_hal.h"
 #include "definee.h"
+#include <stdbool.h>
 
 
 extern const uint16_t speed_levels[3][2];
