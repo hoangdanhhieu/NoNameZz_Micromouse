@@ -276,7 +276,7 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 0 */
 	if(status == turn_left_90 || status == turn_left_45){
 		status = 0;
-	} else if(status != 0) {
+	} else  {
 		switch(status){
 			case u_turn:
 				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);

@@ -114,10 +114,11 @@ int main(void)
   	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
   	HAL_TIM_Base_Start_IT(&htim1);
   	HAL_TIM_Base_Start_IT(&htim3);
-	HAL_Delay(1000);
+	HAL_Delay(2000);
 
 	mmode = 0;
 	status = 0;
+	current_speed = 0;
 
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
@@ -128,26 +129,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	int16_t offset = 0;
 	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 		if (mmode == 1) {
 			HAL_Delay(2000);
-			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
-			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[0][0]);
-
-			while(1){
-				if(TIM1 -> CNT < TIM3 -> CNT){
-					offset--;
-				} else if(TIM1 -> CNT > TIM3 -> CNT){
-					offset++;
-				}
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, speed_levels[0][1] + offset);
-
-			}
+			go_straight(238, 1);
 			mmode = 0;
 		}
 		if (mmode == 2) {

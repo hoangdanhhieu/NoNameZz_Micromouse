@@ -14,9 +14,6 @@
 #define right_wall 4
 #define top_wall 2
 #define bottom_wall 1
-#define front_robot 0
-#define left_robot 1
-#define right_robot 2
 
 int8_t stack[grid_size * grid_size][3];
 volatile bool dma_complete;
@@ -25,12 +22,16 @@ int8_t x, y, direction;
 
 void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf);
 
+
+
 void start_fill() {
+	const float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
+	const float d3 = d2 * 2;
 	memset(visited, false, sizeof(visited));
 	memset(maze, 0, sizeof(maze));
 	current_speed = 0;
-	stack[0][0] = starting_coordinates[0];
-	stack[0][1] = starting_coordinates[1];
+	stack[0][1] = starting_coordinates[0];
+	stack[0][2] = starting_coordinates[1];
 	visited[starting_coordinates[0]][starting_coordinates[1]] = true;
 	dma_complete = 0;
 	int16_t i = 1;
@@ -38,7 +39,8 @@ void start_fill() {
 	y = 0;
 	direction = west;
 	bool front, left, right;
-	go_straight(27, 0);
+	backwards();
+	go_straight(square_size - d1 - d2, 0);
 	while(i > 0){
 		dma_complete = false;
 		front = left = right = true;
@@ -49,33 +51,96 @@ void start_fill() {
 		front = adc_value[0] < pivot_fornt_right;
 		right = adc_value[1] < pivot_right;
 		left  = adc_value[2] < pivot_left;
-		set_wall(left, right, front);
+		set_wall(!left, !right, !front);
 		switch(direction){
 			case west:
 				x--;
+				front = front && !visited[y][x - 1];
+				left  = left && !visited[y + 1][x];
+				right  = right && !visited[y - 1][x];
+				break;
 			case east:
 				x++;
+				front = front && !visited[y][x + 1];
+				left  = left && !visited[y - 1][x];
+				right  = right && !visited[y + 1][x];
+				break;
 			case north:
 				y--;
+				front = front && !visited[y - 1][x];
+				left  = left && !visited[y][x - 1];
+				right  = right && !visited[y][x + 1];
+				break;
 			case south:
 				y++;
+				front = front && !visited[y + 1][x];
+				left  = left && !visited[y][x + 1];
+				right  = right && !visited[y][x - 1];
+				break;
 		}
 		if((left && right) || (left && front) || (right && front)){
 			i++;
-			stack[i][0] = x;
-			stack[i][1] = y;
-			switch(direction){
-				case west:
-					x--;
-				case east:
-					x++;
-				case north:
-					y--;
-				case south:
-					y++;
+			stack[i][1] = x;
+			stack[i][2] = y;
+			if(front){
+				stack[i][0] = straight;
+				go_straight(square_size, 0);
+			} else if(left){
+				stack[i][0] = turn_left_90;
+				go_straight(d3, 1);
+				turn_left90();
+				switch(direction){
+					case west:  direction = south; break;
+					case east:  direction = north; break;
+					case north: direction = west;  break;
+					case south: direction = east;  break;
+				}
+			} else if(right){
+				stack[i][0] = turn_right_90;
+				go_straight(d3, 1);
+				turn_right90();
+				switch(direction){
+					case west:  direction = north; break;
+					case east:  direction = south; break;
+					case north: direction = east;  break;
+					case south: direction = west;  break;
+				}
 			}
 		} else if(left || right || front){
-
+			if(front){
+				if(stack[i][0] == -1){
+					stack[i][1]++;
+				} else {
+					i++;
+					stack[i][0] = -1;
+					stack[i][1] = 1;
+				}
+				go_straight(square_size, 0);
+			} else if(left){
+				i++;
+				stack[i][0] = turn_left_90;
+				stack[i][1] = stack[i][2] = -1;
+				go_straight(d3, 1);
+				turn_left90();
+				switch(direction){
+					case west:  direction = south; break;
+					case east:  direction = north; break;
+					case north: direction = west;  break;
+					case south: direction = east;  break;
+				}
+			} else if(right){
+				i++;
+				stack[i][0] = turn_right_90;
+				stack[i][1] = stack[i][2] = -1;
+				go_straight(d3, 1);
+				turn_right90();
+				switch(direction){
+					case west:  direction = north; break;
+					case east:  direction = south; break;
+					case north: direction = east;  break;
+					case south: direction = west;  break;
+				}
+			}
 		} else {
 
 		}

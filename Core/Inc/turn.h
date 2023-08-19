@@ -28,7 +28,8 @@ void turn_left45();
 void turn_right45();
 void turn_left90();
 void turn_right90();
-void go_straight(float distance, bool brake);
+void go_straight(float distance, bool brakee);
 void brake();
+void backwards();
 
 #endif /* INC_TURN_H_ */

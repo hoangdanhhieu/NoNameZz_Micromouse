@@ -101,10 +101,12 @@ void turn_right90() {
 	brake();
 }
 
-void go_straight(float distance, bool brake) { //millimeter
+void go_straight(float distance, bool brakee) { //millimeter
 	uint16_t en = round(distance * counts_per_1mm);
-	int16_t offset = 0;
 	__HAL_TIM_SET_AUTORELOAD(&htim1, en);
+	if(brakee){
+		__HAL_TIM_SET_AUTORELOAD(&htim3, en * 7 / 10);
+	}
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = straight;
@@ -112,15 +114,27 @@ void go_straight(float distance, bool brake) { //millimeter
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[0][0]);
-
+	int16_t offset = 0;
 	while(status != 0){
 		if(TIM1 -> CNT < TIM3 -> CNT){
 			offset--;
-		} else if(TIM1 -> CNT > TIM3 -> CNT){
+		} else {
 			offset++;
 		}
 		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, speed_levels[0][1] + offset);
 	}
+	if(brakee){
+		brake();
+	}
+}
+
+void backwards(){
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, speed_levels[0][1]);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, speed_levels[0][0]);
+	HAL_Delay(500);
+	brake();
 }
 
 void brake(){
@@ -129,6 +143,7 @@ void brake(){
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, htim2.Init.Period);
 }
+
 /*
 void balance() {
 	uint32_t min = speed_levels[current_speed][0] - 200;

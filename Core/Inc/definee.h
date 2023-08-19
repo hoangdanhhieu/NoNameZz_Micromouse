@@ -30,7 +30,7 @@
 #define wheels_radius       16
 #define encoder_resolution  40
 #define length_MicroMouse   97
-
+#define d1                  28      //length between wheel and rear
 
 
 #endif /* INC_DEFINEE_H_ */
