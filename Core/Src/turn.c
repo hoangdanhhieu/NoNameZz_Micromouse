@@ -13,7 +13,13 @@ const float uturn_arc_en = (float)halfSize_MicroMouse * M_PI * 2 * (180.0/360) *
 const float turn90_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (90.0/360) * counts_per_1mm;
 const float turn45_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (45.0/360) * counts_per_1mm;
 
-void u_turnf() {
+void u_turnf(int8_t *direction) {
+	switch(*direction){
+		case west:  *direction = east;   break;
+		case east:  *direction = west;   break;
+		case north: *direction = south;  break;
+		case south: *direction = north;  break;
+	}
 	__HAL_TIM_SET_AUTORELOAD(&htim1, round(uturn_arc_en));
 	__HAL_TIM_SET_AUTORELOAD(&htim3, round(uturn_arc_en) * 5 / 10);
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -67,7 +73,13 @@ void turn_right45() {
 	brake();
 }
 
-void turn_left90() {
+void turn_left90(int8_t *direction) {
+	switch(*direction){
+		case west:  *direction = south; break;
+		case east:  *direction = north; break;
+		case north: *direction = west;  break;
+		case south: *direction = east;  break;
+	}
 	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en));
 	__HAL_TIM_SET_AUTORELOAD(&htim1, round(turn90_arc_en) * 5 / 10);
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -81,10 +93,15 @@ void turn_left90() {
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
 	while(status != 0);
 	brake();
-	HAL_Delay(1000);
 }
 
-void turn_right90() {
+void turn_right90(int8_t *direction) {
+	switch(*direction){
+		case west:  *direction = north; break;
+		case east:  *direction = south; break;
+		case north: *direction = east;  break;
+		case south: *direction = west;  break;
+	}
 	__HAL_TIM_SET_AUTORELOAD(&htim1, round(turn90_arc_en));
 	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en) * 5 / 10);
 	__HAL_TIM_SET_COUNTER(&htim1, 0);

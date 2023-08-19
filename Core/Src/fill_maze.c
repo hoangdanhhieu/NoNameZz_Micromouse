@@ -15,14 +15,14 @@
 #define top_wall 2
 #define bottom_wall 1
 
+
+
 int8_t stack[grid_size * grid_size][3];
 volatile bool dma_complete;
 volatile uint16_t adc_value[4];
 int8_t x, y, direction;
 
 void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf);
-
-
 
 void start_fill() {
 	const float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
@@ -35,8 +35,8 @@ void start_fill() {
 	visited[starting_coordinates[0]][starting_coordinates[1]] = true;
 	dma_complete = 0;
 	int16_t i = 1;
-	x = -1;
-	y = 0;
+	x = starting_coordinates[0] - 1;
+	y = starting_coordinates[1] - 1;
 	direction = west;
 	bool front, left, right;
 	backwards();
@@ -47,7 +47,6 @@ void start_fill() {
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 8);
 		while(dma_complete == 0);
 		HAL_Delay(10);
-		visited[y][x] = true;
 		front = adc_value[0] < pivot_fornt_right;
 		right = adc_value[1] < pivot_right;
 		left  = adc_value[2] < pivot_left;
@@ -78,6 +77,7 @@ void start_fill() {
 				right  = right && !visited[y][x - 1];
 				break;
 		}
+		visited[y][x] = true;
 		if((left && right) || (left && front) || (right && front)){
 			i++;
 			stack[i][1] = x;
@@ -88,23 +88,11 @@ void start_fill() {
 			} else if(left){
 				stack[i][0] = turn_left_90;
 				go_straight(d3, 1);
-				turn_left90();
-				switch(direction){
-					case west:  direction = south; break;
-					case east:  direction = north; break;
-					case north: direction = west;  break;
-					case south: direction = east;  break;
-				}
+				turn_left90(&direction);
 			} else if(right){
 				stack[i][0] = turn_right_90;
 				go_straight(d3, 1);
-				turn_right90();
-				switch(direction){
-					case west:  direction = north; break;
-					case east:  direction = south; break;
-					case north: direction = east;  break;
-					case south: direction = west;  break;
-				}
+				turn_right90(&direction);
 			}
 		} else if(left || right || front){
 			if(front){
@@ -119,30 +107,49 @@ void start_fill() {
 			} else if(left){
 				i++;
 				stack[i][0] = turn_left_90;
-				stack[i][1] = stack[i][2] = -1;
+				stack[i][1] = -1;
 				go_straight(d3, 1);
-				turn_left90();
-				switch(direction){
-					case west:  direction = south; break;
-					case east:  direction = north; break;
-					case north: direction = west;  break;
-					case south: direction = east;  break;
-				}
+				turn_left90(&direction);
 			} else if(right){
 				i++;
 				stack[i][0] = turn_right_90;
-				stack[i][1] = stack[i][2] = -1;
+				stack[i][1] = -1;
 				go_straight(d3, 1);
-				turn_right90();
-				switch(direction){
-					case west:  direction = north; break;
-					case east:  direction = south; break;
-					case north: direction = east;  break;
-					case south: direction = west;  break;
-				}
+				turn_right90(&direction);
 			}
 		} else {
+			go_straight(d3, 1);
+			u_turnf(&direction);
+			go_straight(d3, 0);
+			while(i != 0 && (stack[i][0] == -1 || stack[i][1] == -1)){
+				if(stack[i][0] == -1){
+					go_straight(stack[i][0], 1);
+				} else {
+					if(stack[i][0] == turn_left_90){
+						turn_right90(&direction);
+					} else {
+						turn_left90(&direction);
+					}
+				}
+				i--;
+			}
+			if(i == 0){ break; }
+			x = stack[i][1];
+			y = stack[i][2];
+			switch(direction){
+				case west:
 
+					break;
+				case east:
+
+					break;
+				case north:
+
+					break;
+				case south:
+
+					break;
+			}
 		}
 	}
 }
@@ -228,5 +235,6 @@ void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf){
 					maze[y + 2][x] |= top_wall;
 				}
 			}
+			break;
 	}
 }

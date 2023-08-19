@@ -12,6 +12,7 @@
 #include "stm32f1xx_hal.h"
 #include "definee.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 
 extern const uint16_t speed_levels[3][2];
@@ -23,11 +24,11 @@ extern volatile int8_t status;
 extern int c;
 
 //void balance();
-void u_turnf();
+void u_turnf(int8_t *direction);
 void turn_left45();
 void turn_right45();
-void turn_left90();
-void turn_right90();
+void turn_left90(int8_t *direction);
+void turn_right90(int8_t *direction);
 void go_straight(float distance, bool brakee);
 void brake();
 void backwards();
