@@ -13,7 +13,7 @@ const float uturn_arc_en = (float)halfSize_MicroMouse * M_PI * 2 * (180.0/360) *
 const float turn90_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (90.0/360) * counts_per_1mm;
 const float turn45_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (45.0/360) * counts_per_1mm;
 
-void u_turnf(int8_t *direction) {
+void u_turnf(uint8_t *direction) {
 	switch(*direction){
 		case west:  *direction = east;   break;
 		case east:  *direction = west;   break;
@@ -73,7 +73,7 @@ void turn_right45() {
 	brake();
 }
 
-void turn_left90(int8_t *direction) {
+void turn_left90(uint8_t *direction) {
 	switch(*direction){
 		case west:  *direction = south; break;
 		case east:  *direction = north; break;
@@ -95,7 +95,7 @@ void turn_left90(int8_t *direction) {
 	brake();
 }
 
-void turn_right90(int8_t *direction) {
+void turn_right90(uint8_t *direction) {
 	switch(*direction){
 		case west:  *direction = north; break;
 		case east:  *direction = south; break;
@@ -124,8 +124,6 @@ void go_straight(float distance, bool brakee) { //millimeter
 	if(brakee){
 		__HAL_TIM_SET_AUTORELOAD(&htim3, en * 7 / 10);
 	}
-	__HAL_TIM_SET_COUNTER(&htim1, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = straight;
 
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);

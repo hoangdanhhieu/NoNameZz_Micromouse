@@ -20,20 +20,23 @@
 int8_t stack[grid_size * grid_size][3];
 volatile bool dma_complete;
 volatile uint16_t adc_value[4];
-int8_t x, y, direction;
+int8_t x, y;
+static uint8_t direction;
+const float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
+const float d3 = d2 * 2;
 
 void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf);
 
 void start_fill() {
-	const float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
-	const float d3 = d2 * 2;
 	memset(visited, false, sizeof(visited));
 	memset(maze, 0, sizeof(maze));
+	__HAL_TIM_SET_COUNTER(&htim1, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	current_speed = 0;
+	stack[0][0] = straight;
 	stack[0][1] = starting_coordinates[0];
 	stack[0][2] = starting_coordinates[1];
 	visited[starting_coordinates[0]][starting_coordinates[1]] = true;
-	dma_complete = 0;
 	int16_t i = 1;
 	x = starting_coordinates[0] - 1;
 	y = starting_coordinates[1] - 1;
@@ -120,34 +123,148 @@ void start_fill() {
 		} else {
 			go_straight(d3, 1);
 			u_turnf(&direction);
-			go_straight(d3, 0);
 			while(i != 0 && (stack[i][0] == -1 || stack[i][1] == -1)){
 				if(stack[i][0] == -1){
-					go_straight(stack[i][0], 1);
+					go_straight((float)stack[i][0] * 180, 0);
 				} else {
 					if(stack[i][0] == turn_left_90){
+						go_straight(d3, 1);
 						turn_right90(&direction);
 					} else {
+						go_straight(d3, 1);
 						turn_left90(&direction);
 					}
 				}
 				i--;
+				if((i != 0 && !(stack[i][0] == -1 || stack[i][1] == -1)) &&
+						((maze[stack[i][1]][stack[i][0]] & 8) == 0 || visited[y][x - 1]) &&
+						((maze[stack[i][1]][stack[i][0]] & 4) == 0 || visited[y][x + 1]) &&
+						((maze[stack[i][1]][stack[i][0]] & 2) == 0 || visited[y - 1][x]) &&
+						((maze[stack[i][1]][stack[i][0]] & 1) == 0 || visited[y + 1][x])){
+					switch(stack[i][0]){
+						case(straight):
+							stack[i][0] = -1;
+							stack[i][1] = 1;
+							break;
+						case(turn_left_90):
+							stack[i][0] = turn_right_90;
+							stack[i][1] = -1;
+							break;
+						case(turn_right_90):
+							stack[i][0] = turn_left_90;
+							stack[i][1] = -1;
+							break;
+					}
+				}
 			}
-			if(i == 0){ break; }
+			if(i == 0){
+				u_turnf(&direction);
+				backwards();
+				break;
+			}
 			x = stack[i][1];
 			y = stack[i][2];
 			switch(direction){
 				case west:
-
+					switch(stack[i][0]){
+						case straight:      //going from the east
+							if(stack[i + 1][0] == -1){ go_straight(d3, 1); }
+							if(((maze[y][x] & 2) == 0) && !visited[y - 1][x]){
+								stack[i][0] = turn_left_90;
+								turn_right90(&direction);
+							} else if(((maze[y][x] & 1) == 0) && !visited[y + 1][x]){
+								stack[i][0] = turn_right_90;
+								turn_left90(&direction);
+							}
+							break;
+						case turn_left_90:  //going from the south and turn left
+							if(((maze[y][x] & 8) == 0) && !visited[y][x - 1]){
+								stack[i][0] = turn_right_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							 break;
+						case turn_right_90: //going from the north and turn right
+							if(((maze[y][x] & 8) == 0) && !visited[y][x - 1]){
+								stack[i][0] = turn_left_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							break;
+					}
 					break;
 				case east:
-
+					switch(stack[i][0]){
+						case straight:       //going from west
+							if(((maze[y][x] & 2) == 0) && !visited[y - 1][x]){
+								stack[i][0] = turn_right_90;
+								turn_left90(&direction);
+							} else if(((maze[y][x] & 1) == 0) && !visited[y + 1][x]){
+								stack[i][0] = turn_left_90;
+								turn_right90(&direction);
+							}
+							break;
+						case turn_left_90:   //going from north and turn left
+							if(((maze[y][x] & 4) == 0) && !visited[y][x + 1]){
+								stack[i][0] = turn_right_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							break;
+						case turn_right_90:  //going from south and turn right
+							if(((maze[y][x] & 4) == 0) && !visited[y][x + 1]){
+								stack[i][0] = turn_left_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							break;
+					}
 					break;
 				case north:
-
+					switch(stack[i][0]){
+						case straight:       //going from south
+							if(((maze[y][x] & 8) == 0) && !visited[y][x - 1]){
+								stack[i][0] = turn_right_90;
+								turn_left90(&direction);
+							} else if(((maze[y][x] & 4) == 0) && !visited[y][x + 1]){
+								stack[i][0] = turn_left_90;
+								turn_right90(&direction);
+							}
+							break;
+						case turn_left_90:   //going from west and turn left
+							if(((maze[y][x] & 2) == 0) && !visited[y - 1][x]){
+								stack[i][0] = turn_right_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							break;
+						case turn_right_90:  //going from east and turn right
+							if(((maze[y][x] & 2) == 0) && !visited[y - 1][x]){
+								stack[i][0] = turn_left_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							break;
+					}
 					break;
 				case south:
-
+					switch(stack[i][0]){
+						case straight:       //going from north
+							if(((maze[y][x] & 8) == 0) && !visited[y][x - 1]){
+								stack[i][0] = turn_left_90;
+								turn_right90(&direction);
+							} else if(((maze[y][x] & 4) == 0) && !visited[y][x + 1]){
+								stack[i][0] = turn_right_90;
+								turn_left90(&direction);
+							}
+							break;
+						case turn_left_90:   //going from east and turn left
+							if(((maze[y][x] & 1) == 0) && !visited[y + 1][x]){
+								stack[i][0] = turn_right_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							break;
+						case turn_right_90:  //going from west and turn right
+							if(((maze[y][x] & 1) == 0) && !visited[y + 1][x]){
+								stack[i][0] = turn_left_90;
+								go_straight(square_size * 2 - ((stack[i + 1][0] == -1) ? 0 : d3), 1);
+							}
+							break;
+					}
 					break;
 			}
 		}

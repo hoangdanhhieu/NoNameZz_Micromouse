@@ -24,11 +24,11 @@ extern volatile int8_t status;
 extern int c;
 
 //void balance();
-void u_turnf(int8_t *direction);
+void u_turnf(uint8_t *direction);
 void turn_left45();
 void turn_right45();
-void turn_left90(int8_t *direction);
-void turn_right90(int8_t *direction);
+void turn_left90(uint8_t *direction);
+void turn_right90(uint8_t *direction);
 void go_straight(float distance, bool brakee);
 void brake();
 void backwards();

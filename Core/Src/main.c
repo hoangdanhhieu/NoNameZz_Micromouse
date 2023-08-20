@@ -136,6 +136,7 @@ int main(void)
 		if (mmode == 1) {
 			HAL_Delay(2000);
 			go_straight(238, 1);
+			start_fill();
 			mmode = 0;
 		}
 		if (mmode == 2) {
