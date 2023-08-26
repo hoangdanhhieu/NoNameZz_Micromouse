@@ -24,13 +24,22 @@
 #define turn_right_45 -2
 #define turn_right_90 -1
 
-#define grid_size           16
-#define square_size         180
+#define grid_size           10
+#define square_size         300
 #define halfSize_MicroMouse 34
 #define wheels_radius       16
 #define encoder_resolution  40
 #define length_MicroMouse   97
 #define d1                  28      //length between wheel and rear
+
+#define leftWallValue 100
+#define rightWallValue 100
+#define frontWallValue 100
+
+#define left_sensor45 adc_value[2]
+#define right_sensor45 adc_value[1]
+#define left_sensor_front adc_value[3]
+#define right_sensor_front adc_value[0]
 
 
 #endif /* INC_DEFINEE_H_ */

@@ -9,7 +9,7 @@
 
 
 const int8_t move[4][3] = {{0, -1, 8}, {0, 1, 4}, {-1, 0, 2}, {1, 0, 1}};
-const float half_diagonal = sqrt(pow(90, 2) + pow(90, 2));
+const float half_diagonal = sqrt(pow(square_size/2, 2) + pow(square_size/2, 2));
 const float offset45 = (float)tan(22.5 * M_PI / 180) * halfSize_MicroMouse;
 const float offset90 = halfSize_MicroMouse;
 
@@ -25,11 +25,16 @@ void findShortestPath(){
     memset(visited, false, sizeof(visited));
     for(uint16_t i = 0; i < grid_size * grid_size; i++)
     	shortestPath[i] = 0;
-    int16_t len = 1;
-    int16_t curr = 0;
+    int16_t len = 2;
+    int16_t curr = 1;
+
     temp[0][0] = ending_coordinates[0];
-    temp[0][1] = ending_coordinates[1];
-    temp[0][2] = 0;
+    temp[0][1] = ending_coordinates[1] - 1;
+    temp[0][2] = -1;
+
+    temp[1][0] = ending_coordinates[0];
+    temp[1][1] = ending_coordinates[1];
+    temp[1][2] = 0;
     visited[temp[0][0]][temp[0][1]] = true;
     int16_t x, y;
     while(curr != len){
@@ -50,7 +55,7 @@ void findShortestPath(){
         curr++;
     }
 
-    direction = west;
+    direction = north;
     uint8_t lastt_x;
     uint8_t last_x = temp[curr][0];
     uint8_t last_y = temp[curr][1];
@@ -104,7 +109,7 @@ void findShortestPath(){
                     add_path(offset90, turn_right_90, half_diagonal - offset90, north_west);
                     break;
                 case south_east:
-                    add_path(offset90, turn_right_90, half_diagonal - offset90, north_east);
+                    add_path(offset90, turn_left_90, half_diagonal - offset90, north_east);
                     break;
                 case north_west:
                     if(lastt_x > last_x){

@@ -44,7 +44,7 @@ extern "C" {
 extern uint8_t maze[grid_size][grid_size];
 extern const uint8_t starting_coordinates[2];
 extern const uint8_t ending_coordinates[2];
-extern const uint16_t speed_levels[3][2];
+extern const uint16_t speed_levels[2][2];
 extern bool visited[grid_size][grid_size];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
@@ -52,6 +52,7 @@ extern TIM_HandleTypeDef htim3;
 extern ADC_HandleTypeDef hadc1;
 extern volatile uint8_t current_speed;
 extern volatile uint8_t mmode;
+extern volatile uint16_t adc_value[4];
 extern int c;
 
 /* USER CODE END ET */

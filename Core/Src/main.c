@@ -64,11 +64,12 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-const uint8_t starting_coordinates[2] = { 15, 15 }; //{x, y}
-const uint8_t ending_coordinates[2] = { 0, 0 }; //{x, y}
-const uint16_t speed_levels[3][2] = { { 900, 900 }, { 1500, 1500 }, { 2500, 2500 } };
+const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
+const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
+const uint16_t speed_levels[2][2] = { { 900, 900 }, { 2000, 2000 }};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
+volatile uint16_t adc_value[4];
 volatile uint8_t current_speed;
 volatile uint8_t mmode;
 volatile int8_t status;
@@ -115,10 +116,10 @@ int main(void)
   	HAL_TIM_Base_Start_IT(&htim1);
   	HAL_TIM_Base_Start_IT(&htim3);
 	HAL_Delay(2000);
-
 	mmode = 0;
 	status = 0;
 	current_speed = 0;
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 8);
 
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
@@ -216,7 +217,7 @@ static void MX_ADC1_Init(void)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
@@ -230,7 +231,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_41CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -442,11 +443,6 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 }
 
