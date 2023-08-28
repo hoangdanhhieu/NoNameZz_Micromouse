@@ -25,17 +25,23 @@ void findShortestPath(){
     memset(visited, false, sizeof(visited));
     for(uint16_t i = 0; i < grid_size * grid_size; i++)
     	shortestPath[i] = 0;
-    int16_t len = 2;
-    int16_t curr = 1;
+
+    int16_t len = 3;
+    int16_t curr = 2;
 
     temp[0][0] = ending_coordinates[0];
-    temp[0][1] = ending_coordinates[1] - 1;
+    temp[0][1] = ending_coordinates[1] - 2;
     temp[0][2] = -1;
 
     temp[1][0] = ending_coordinates[0];
-    temp[1][1] = ending_coordinates[1];
+    temp[1][1] = ending_coordinates[1] - 1;
     temp[1][2] = 0;
-    visited[temp[0][0]][temp[0][1]] = true;
+
+    temp[2][0] = ending_coordinates[0];
+    temp[2][1] = ending_coordinates[1];
+    temp[2][2] = 1;
+
+    visited[temp[2][1]][temp[2][0]] = true;
     int16_t x, y;
     while(curr != len){
         x = temp[curr][0];

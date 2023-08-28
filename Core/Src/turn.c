@@ -123,7 +123,7 @@ void turn_right90(uint8_t *direction) {
 
 void go_straight(float distance, bool brakee) { //millimeter
 	uint16_t en = round(distance * counts_per_1mm);
-	__HAL_TIM_SET_AUTORELOAD(&htim1, en - TIM1 -> cnt);
+	__HAL_TIM_SET_AUTORELOAD(&htim1, en - TIM1 -> CNT);
 	if(brakee){
 		__HAL_TIM_SET_AUTORELOAD(&htim3, en * 7 / 10);
 	}

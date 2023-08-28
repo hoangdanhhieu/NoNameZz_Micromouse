@@ -19,7 +19,7 @@ static uint8_t direction;
 const float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
 
 void found(int16_t index);
-void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf);
+void set_wall(bool rbl, bool rbr, bool rbf);
 
 void start_fill() {
 	memset(visited, false, sizeof(visited));
@@ -30,15 +30,14 @@ void start_fill() {
 	stack[0][0] = straight;
 	stack[0][1] = starting_coordinates[0];
 	stack[0][2] = starting_coordinates[1];
-	visited[starting_coordinates[0]][starting_coordinates[1]] = true;
-	int16_t i = 1;
-	x = starting_coordinates[0] - 1;
-	y = starting_coordinates[1] - 1;
-	maze[y][x] |= bottom_wall;
-	direction = west;
+	visited[starting_coordinates[1]][starting_coordinates[0]] = true;
+	int16_t i = 0;
+	x = starting_coordinates[0];
+	y = starting_coordinates[1] + 1;
+	maze[y - 1][x] |= bottom_wall;
+	direction = north;
 	bool frontfree, leftfree, rightfree;
-	while(i > 0){
-		frontfree = leftfree = rightfree = true;
+	while(i > -1){
 		frontfree = adc_value[0] < frontWallValue;
 		rightfree = adc_value[1] < rightWallValue;
 		leftfree  = adc_value[2] < leftWallValue;
@@ -46,7 +45,7 @@ void start_fill() {
 		if(x == ending_coordinates[0] && y == ending_coordinates[1]){
 			found(i);
 			maze[y][x] |= top_wall;
-			frontfree = rightfree = leftfree = false;
+			break;
 		}
 		switch(direction){
 			case west:
@@ -91,7 +90,7 @@ void start_fill() {
 			}
 		} else if(leftfree || rightfree || frontfree){
 			if(frontfree){
-				if(stack[i][0] == straight){
+				if(stack[i][0] == straight && stack[i][1] == -1){
 					stack[i][2]++;
 				} else {
 					i++;
@@ -137,25 +136,12 @@ void start_fill() {
 				}
 				i--;
 				if((i != 0 && stack[i][1] != -1) &&
-						((maze[stack[i][1]][stack[i][0]] & 8) != 0 || visited[y][x - 1]) &&
-						((maze[stack[i][1]][stack[i][0]] & 4) != 0 || visited[y][x + 1]) &&
-						((maze[stack[i][1]][stack[i][0]] & 2) != 0 || visited[y - 1][x]) &&
-						((maze[stack[i][1]][stack[i][0]] & 1) != 0 || visited[y + 1][x])){
-					switch(stack[i][0]){
-						case(straight):
-							stack[i][0] = straight;
-							stack[i][1] = -1;
-							stack[i][2] = 1;
-							break;
-						case(turn_left_90):
-							stack[i][0] = turn_right_90;
-							stack[i][1] = -1;
-							break;
-						case(turn_right_90):
-							stack[i][0] = turn_left_90;
-							stack[i][1] = -1;
-							break;
-					}
+						((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
+						((maze[stack[i][2]][stack[i][1]] & 4) != 0 || visited[stack[i][2]][stack[i][1] + 1]) &&
+						((maze[stack[i][2]][stack[i][1]] & 2) != 0 || visited[stack[i][2] - 1][stack[i][1]]) &&
+						((maze[stack[i][2]][stack[i][1]] & 1) != 0 || visited[stack[i][2] + 1][stack[i][1]])){
+					stack[i][1] = -1;
+					stack[i][2] = 1;
 				}
 			}
 			if(i == 0){
@@ -249,8 +235,12 @@ void start_fill() {
 		}
 		for(int n = 0; n < grid_size; n++){
 			for(int m = 0; m < grid_size; m++){
-				if(!visited[y][x]){
-					maze[x][y] |= 15;
+				if(!visited[n][m]){
+					maze[n][m] |= 15;
+					if(n > 0){ maze[n - 1][m] |= bottom_wall; }
+					if(n + 1 < grid_size){ maze[n + 1][m] |= top_wall; }
+					if(m > 0){ maze[n][m - 1] |= right_wall; }
+					if(m + 1 < grid_size){ maze[n][m + 1] |= left_wall; }
 				}
 			}
 		}
@@ -263,23 +253,16 @@ void found(int16_t index){
 			go_straight(d2, 1);
 			turn_right90(&direction);
 			go_straight(d2, 1);
-			stack[++index][0] = turn_right_90;
-			stack[index][1] = x;
-			stack[index][2] = y;
+			go_straight(square_size, 1);
 			break;
 		case east:
 			go_straight(d2, 1);
 			turn_left90(&direction);
 			go_straight(d2, 1);
-			stack[++index][0] = turn_left_90;
-			stack[index][1] = x;
-			stack[index][2] = y;
+			go_straight(square_size, 1);
 			break;
 		case north:
-			go_straight(square_size, 1);
-			stack[++index][0] = straight;
-			stack[index][1] = x;
-			stack[index][2] = y;
+			go_straight(square_size * 2, 1);
 			break;
 	}
 	while(--index > 0){
@@ -288,7 +271,7 @@ void found(int16_t index){
 	}
 }
 
-void set_wall(uint8_t rbl, uint8_t rbr, uint8_t rbf){
+void set_wall(bool rbl, bool rbr, bool rbf){
 	switch(direction){
 		case west:
 			x--;
