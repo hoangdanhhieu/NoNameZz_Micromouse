@@ -66,14 +66,14 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
-const uint16_t speed_levels[2][2] = { { 900, 900 }, { 2000, 2000 }};
+const uint16_t speed_levels[2][2] = { { 1500, 1500 }, { 2000, 2000 }};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 volatile uint16_t adc_value[4];
 volatile uint8_t current_speed;
 volatile uint8_t mmode;
 volatile int8_t status;
-int a, b, c;
+uint16_t a, b, c, d;
 /* USER CODE END 0 */
 
 /**
@@ -119,13 +119,12 @@ int main(void)
 	mmode = 0;
 	status = 0;
 	current_speed = 0;
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 8);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 4);
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, htim2.Init.Period);
-
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period/2);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period/2);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -135,16 +134,15 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		if (mmode == 1) {
-			HAL_Delay(2000);
-			go_straight(238, 1);
-			start_fill();
+			//HAL_Delay(2000);
+			//go_straight(600, 1);
 			mmode = 0;
 		}
 		if (mmode == 2) {
 			mmode = 0;
 		}
-		a = TIM1->CNT;
-		b = TIM3->CNT;
+		//a = TIM1->CNT;
+		//b = TIM3->CNT;
 	}
   /* USER CODE END 3 */
 }
@@ -231,7 +229,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_41CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -337,7 +335,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 99;
+  htim2.Init.Prescaler = 80;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 9999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

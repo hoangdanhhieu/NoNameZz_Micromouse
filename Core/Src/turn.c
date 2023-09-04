@@ -123,16 +123,16 @@ void turn_right90(uint8_t *direction) {
 
 void go_straight(float distance, bool brakee) { //millimeter
 	uint16_t en = round(distance * counts_per_1mm);
-	__HAL_TIM_SET_AUTORELOAD(&htim1, en - TIM1 -> CNT);
+	__HAL_TIM_SET_AUTORELOAD(&htim1, en);
 	if(brakee){
 		__HAL_TIM_SET_AUTORELOAD(&htim3, en * 7 / 10);
 	}
 	status = straight;
-
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, speed_levels[0][1]);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[0][0]);
-	PID();
+	//PID();
 	if(brakee){
 		brake();
 	}

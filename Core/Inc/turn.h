@@ -22,7 +22,6 @@ extern TIM_HandleTypeDef htim3;
 extern volatile uint8_t current_speed;
 extern volatile int8_t status;
 extern volatile uint16_t adc_value[4];
-extern int c;
 
 //void balance();
 void u_turnf(uint8_t *direction);

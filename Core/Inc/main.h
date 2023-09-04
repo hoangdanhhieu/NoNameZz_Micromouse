@@ -53,7 +53,6 @@ extern ADC_HandleTypeDef hadc1;
 extern volatile uint8_t current_speed;
 extern volatile uint8_t mmode;
 extern volatile uint16_t adc_value[4];
-extern int c;
 
 /* USER CODE END ET */
 
