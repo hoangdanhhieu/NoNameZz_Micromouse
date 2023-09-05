@@ -121,9 +121,9 @@ int main(void)
 	current_speed = 0;
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 4);
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period/2);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period/2);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
   /* USER CODE END 2 */
 

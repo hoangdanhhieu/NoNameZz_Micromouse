@@ -132,6 +132,14 @@ void start_fill() {
 			go_straight(d2, 1);
 			u_turnf(&direction);
 			go_straight(d2, 0);
+			if(stack[i][1] != -1 &&
+					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
+					((maze[stack[i][2]][stack[i][1]] & 4) != 0 || visited[stack[i][2]][stack[i][1] + 1]) &&
+					((maze[stack[i][2]][stack[i][1]] & 2) != 0 || visited[stack[i][2] - 1][stack[i][1]]) &&
+					((maze[stack[i][2]][stack[i][1]] & 1) != 0 || visited[stack[i][2] + 1][stack[i][1]])){
+				stack[i][1] = -1;
+				stack[i][2] = 1;
+			}
 			while(stack[i][1] == -1){
 				switch(stack[i][0]){
 					case straight:
