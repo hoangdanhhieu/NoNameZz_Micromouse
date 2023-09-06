@@ -121,10 +121,10 @@ int main(void)
 	current_speed = 0;
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 4);
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -134,11 +134,35 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		if (mmode == 1) {
-			//HAL_Delay(2000);
-			//go_straight(600, 1);
+			HAL_Delay(5000);
+			start_fill();
+			findShortestPath();
 			mmode = 0;
 		}
 		if (mmode == 2) {
+			uint8_t d = north;
+			for(uint16_t i = 0; i <= path_index; i++){
+				switch((int32_t)shortestPath[i]){
+					case turn_left_90:
+						turn_left90(&d);
+						break;
+					case turn_right_90:
+						turn_right90(&d);
+						break;
+					case turn_left_45:
+						turn_left45(&d);
+						break;
+					case turn_right_45:
+						turn_right45(&d);
+						break;
+					default:
+						if(shortestPath[i] < 0){
+							backwards(shortestPath[i], true);
+						} else {
+							go_straight(shortestPath[i], true);
+						}
+				}
+			}
 			mmode = 0;
 		}
 		//a = TIM1->CNT;

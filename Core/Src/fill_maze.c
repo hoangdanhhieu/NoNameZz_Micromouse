@@ -201,7 +201,7 @@ void start_fill() {
 							go_straight(d2, 0);
 						}
 					} else {
-						stack[i][0] = stack[i][0] == turn_left_90 ? turn_right_90 : turn_left_90;
+						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
 						go_straight(square_size, 0);
 					}
 					break;
@@ -219,7 +219,7 @@ void start_fill() {
 							go_straight(d2, 0);
 						}
 					} else {
-						stack[i][0] = stack[i][0] == turn_left_90 ? turn_right_90 : turn_left_90;
+						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
 						go_straight(square_size, 0);
 					}
 					break;

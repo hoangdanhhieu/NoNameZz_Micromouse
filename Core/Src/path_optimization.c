@@ -16,7 +16,7 @@ const float offset90 = halfSize_MicroMouse;
 int16_t temp[grid_size * grid_size][3];
 float shortestPath[grid_size * grid_size * 4];
 static uint8_t direction;
-uint8_t path_index;
+uint16_t path_index;
 
 
 void add_path(float pram1, float param2, float param3, uint8_t param4);

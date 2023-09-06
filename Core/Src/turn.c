@@ -27,10 +27,10 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = u_turn;
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[current_speed][0]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, speed_levels[current_speed][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, speed_levels[current_speed][1]);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -43,11 +43,11 @@ void turn_left45() {
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = turn_left_45;
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, htim2.Init.Period);
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, speed_levels[current_speed][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, speed_levels[current_speed][1]);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, 0);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -61,11 +61,10 @@ void turn_right45() {
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = turn_right_45;
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
-
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[current_speed][0]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, htim2.Init.Period);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -85,11 +84,10 @@ void turn_left90(uint8_t *direction) {
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = turn_left_90;
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, htim2.Init.Period);
-
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, speed_levels[current_speed][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, speed_levels[current_speed][1]);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, 0);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -109,11 +107,10 @@ void turn_right90(uint8_t *direction) {
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = turn_right_90;
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
-
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[current_speed][0]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, htim2.Init.Period);
 
 	while(status != 0);
 	brake();
@@ -128,30 +125,38 @@ void go_straight(float distance, bool brakee) { //millimeter
 		__HAL_TIM_SET_AUTORELOAD(&htim3, en * 7 / 10);
 	}
 	status = straight;
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, speed_levels[0][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[0][0]);
-	//PID();
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, speed_levels[current_speed][1]);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, 0);
+	PID();
 	if(brakee){
 		brake();
 	}
 }
 
-void backwards(){
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, speed_levels[0][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, speed_levels[0][0]);
-	HAL_Delay(500);
-	brake();
+void backwards(float distance, bool brakee){
+	uint16_t en = round(distance * counts_per_1mm);
+	__HAL_TIM_SET_AUTORELOAD(&htim1, en);
+	if(brakee){
+		__HAL_TIM_SET_AUTORELOAD(&htim3, en * 7 / 10);
+	}
+	status = straight;
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, speed_levels[current_speed][0]);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, 0);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, speed_levels[current_speed][1]);
+	PID();
+	if(brakee){
+		brake();
+	}
 }
 
 void brake(){
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, htim2.Init.Period);
 }
 
 void PID(){

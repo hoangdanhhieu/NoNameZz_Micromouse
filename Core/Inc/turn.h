@@ -30,8 +30,8 @@ void turn_right45();
 void turn_left90(uint8_t *direction);
 void turn_right90(uint8_t *direction);
 void go_straight(float distance, bool brakee);
+void backwards(float distance, bool brakee);
 void brake();
-void backwards();
 void PID();
 
 #endif /* INC_TURN_H_ */
