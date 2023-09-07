@@ -19,6 +19,7 @@ extern const uint16_t speed_levels[2][2];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 extern volatile uint8_t current_speed;
 extern volatile int8_t status;
 extern volatile uint16_t adc_value[4];
@@ -32,6 +33,6 @@ void turn_right90(uint8_t *direction);
 void go_straight(float distance, bool brakee);
 void backwards(float distance, bool brakee);
 void brake();
-void PID();
+void PID(uint8_t d);
 
 #endif /* INC_TURN_H_ */

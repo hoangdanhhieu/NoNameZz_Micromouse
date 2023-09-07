@@ -49,6 +49,7 @@ extern bool visited[grid_size][grid_size];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 extern ADC_HandleTypeDef hadc1;
 extern volatile uint8_t current_speed;
 extern volatile uint8_t mmode;

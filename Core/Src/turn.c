@@ -29,8 +29,8 @@ void u_turnf(uint8_t *direction) {
 	status = u_turn;
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, speed_levels[current_speed][1]);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, 0);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, speed_levels[current_speed][1]);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -46,8 +46,8 @@ void turn_left45() {
 
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, speed_levels[current_speed][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, 0);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, speed_levels[current_speed][1]);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, 0);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -63,8 +63,8 @@ void turn_right45() {
 
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim2.Init.Period);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -86,8 +86,8 @@ void turn_left90(uint8_t *direction) {
 
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, speed_levels[current_speed][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, 0);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, speed_levels[current_speed][1]);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, 0);
 	while(status != 0);
 	brake();
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
@@ -110,7 +110,7 @@ void turn_right90(uint8_t *direction) {
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
 	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim2.Init.Period);
 
 	while(status != 0);
 	brake();
@@ -127,9 +127,9 @@ void go_straight(float distance, bool brakee) { //millimeter
 	status = straight;
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0]);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, speed_levels[current_speed][1]);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, 0);
-	PID();
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, speed_levels[current_speed][1]);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, 0);
+	PID(0);
 	if(brakee){
 		brake();
 	}
@@ -144,9 +144,9 @@ void backwards(float distance, bool brakee){
 	status = straight;
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, 0);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, speed_levels[current_speed][0]);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, 0);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, speed_levels[current_speed][1]);
-	PID();
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, 0);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, speed_levels[current_speed][1]);
+	PID(1);
 	if(brakee){
 		brake();
 	}
@@ -155,11 +155,11 @@ void backwards(float distance, bool brakee){
 void brake(){
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, R_Motor2, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim2.Init.Period);
 }
 
-void PID(){
+void PID(uint8_t d){
 	int16_t Err, pErr = 0, P, D, total;
 	while(status != 0){
 		if(left_sensor45 > leftWallValue && right_sensor45 > rightWallValue){
@@ -176,10 +176,17 @@ void PID(){
 		D = kd * (Err - pErr);
 		pErr = Err;
 		total = P + D;
-		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
-		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, speed_levels[current_speed][0] + total);
-		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, speed_levels[current_speed][1] - total);
+		if(d == 0){
+			__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, speed_levels[current_speed][0] + total);
+			__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, 0);
+			__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, speed_levels[current_speed][1] - total);
+			__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, 0);
+		} else {
+			__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, 0);
+			__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, speed_levels[current_speed][0] + total);
+			__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, 0);
+			__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, speed_levels[current_speed][1] - total);
+		}
 	}
 }
 

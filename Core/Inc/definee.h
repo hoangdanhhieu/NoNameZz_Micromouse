@@ -43,8 +43,8 @@
 
 #define R_Motor1 TIM_CHANNEL_1
 #define R_Motor2 TIM_CHANNEL_2
-#define L_Motor1 TIM_CHANNEL_3
-#define L_Motor2 TIM_CHANNEL_4
+#define L_Motor1 TIM_CHANNEL_1
+#define L_Motor2 TIM_CHANNEL_2
 
 
 #endif /* INC_DEFINEE_H_ */
