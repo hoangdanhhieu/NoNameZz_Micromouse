@@ -15,7 +15,8 @@
 #include <stdint.h>
 
 
-extern const uint16_t speed_levels[2][2];
+extern const int32_t speed_levels[3][2];
+extern int32_t PID_params[3][3];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
@@ -23,6 +24,7 @@ extern TIM_HandleTypeDef htim4;
 extern volatile uint8_t current_speed;
 extern volatile int8_t status;
 extern volatile uint16_t adc_value[4];
+extern int a, b, c, d, e;
 
 //void balance();
 void u_turnf(uint8_t *direction);

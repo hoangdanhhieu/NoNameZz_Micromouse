@@ -234,17 +234,6 @@ void TIM1_UP_IRQHandler(void)
   /* USER CODE BEGIN TIM1_UP_IRQn 0 */
 	if(status == u_turn || status == turn_right_90 || status == turn_right_45 || status == straight){
 		status = 0;
-	} else {
-		switch(status){
-			case turn_left_90:
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 500);
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
-				break;
-			case turn_left_45:
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 500);
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
-				break;
-		}
 	}
   /* USER CODE END TIM1_UP_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
@@ -261,24 +250,6 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 0 */
 	if(status == turn_left_90 || status == turn_left_45){
 		status = 0;
-	} else  {
-		switch(status){
-			case u_turn:
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 500);
-			case turn_right_90:
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-				break;
-			case turn_right_45:
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 0);
-				break;
-			case straight:
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
-				__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 500);
-				break;
-		}
 	}
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);

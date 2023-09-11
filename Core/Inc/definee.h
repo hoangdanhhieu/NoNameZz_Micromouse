@@ -26,25 +26,27 @@
 
 #define grid_size           10
 #define square_size         300
-#define halfSize_MicroMouse 34
+#define halfSize_MicroMouse 33
 #define wheels_radius       16
 #define encoder_resolution  40
 #define length_MicroMouse   97
 #define d1                  28      //length between wheel and rear
 
-#define leftWallValue 100
-#define rightWallValue 100
-#define frontWallValue 100
+#define leftWallValue  5000 //100
+#define rightWallValue 5000 //100
+#define frontWallValue 5000 //350
 
 #define left_sensor45 adc_value[2]
 #define right_sensor45 adc_value[1]
 #define left_sensor_front adc_value[3]
 #define right_sensor_front adc_value[0]
 
-#define R_Motor1 TIM_CHANNEL_1
-#define R_Motor2 TIM_CHANNEL_2
-#define L_Motor1 TIM_CHANNEL_1
-#define L_Motor2 TIM_CHANNEL_2
+#define R_Motor1 TIM_CHANNEL_2
+#define R_Motor2 TIM_CHANNEL_1
+#define L_Motor1 TIM_CHANNEL_2
+#define L_Motor2 TIM_CHANNEL_1
+
+const static float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
 
 
 #endif /* INC_DEFINEE_H_ */

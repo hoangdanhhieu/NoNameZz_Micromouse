@@ -16,7 +16,7 @@
 int8_t stack[grid_size * grid_size][3];
 int8_t x, y;
 static uint8_t direction;
-const float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
+
 
 void found(int16_t index);
 void set_wall(bool rbl, bool rbr, bool rbf);

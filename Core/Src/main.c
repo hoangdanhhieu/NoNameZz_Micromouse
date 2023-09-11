@@ -68,14 +68,15 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
-const uint16_t speed_levels[2][2] = { { 1500, 1500 }, { 2000, 2000 }};
+const int32_t speed_levels[3][2] = { { 1000, 1000 }, { 1100, 1100 }, { 3000, 3000 }};
+int32_t PID_params[3][3] = {{16, 0, 0}, {50, 30, 0}, {0, 0, 0}}; //{KP, KI, KD}
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 volatile uint16_t adc_value[4];
 volatile uint8_t current_speed;
 volatile uint8_t mmode;
 volatile int8_t status;
-uint16_t a, b, c, d;
+int a, b, c, d, e;
 /* USER CODE END 0 */
 
 /**
@@ -121,33 +122,74 @@ int main(void)
 	HAL_Delay(2000);
 	mmode = 0;
 	status = 0;
-	current_speed = 0;
+	current_speed = 1;
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 4);
-
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim2.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
+	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
+		a = TIM1->CNT;
+		b = TIM3->CNT;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 		if (mmode == 1) {
-			HAL_Delay(5000);
-			go_straight(60, 1);
+			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
+			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+
+
+			HAL_Delay(2000);
+			uint8_t d;
+			TIM1->CNT = 0;
+			TIM3->CNT = 0;
+			turn_right45(&d);
+			HAL_Delay(100);
+			turn_right45(&d);
+			HAL_Delay(100);
+			turn_right45(&d);
+			HAL_Delay(100);
+			turn_right45(&d);
+			/*
+			go_straight(square_size, false);
+
+			go_straight(d2, true);
+			turn_right90(&d);
+			go_straight(d2, false);
+
+			go_straight(d2, true);
+			turn_right90(&d);
+			go_straight(d2, false);
+
+			go_straight(d2, true);
+			turn_right90(&d);
+			go_straight(d2, false);
+
+			go_straight(d2, true);
+			turn_right90(&d);
+			go_straight(d2, true);
+			*/
+
+
+
 			/*
 			start_fill();
 			findShortestPath();
 			*/
+			HAL_Delay(500);
+			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 			mmode = 0;
 		}
 		if (mmode == 2) {
-			HAL_Delay(5000);
 			/*
+			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
+			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+			HAL_Delay(5000);
 			uint8_t d = north;
 			for(uint16_t i = 0; i <= path_index; i++){
 				switch((int32_t)shortestPath[i]){
@@ -171,7 +213,11 @@ int main(void)
 						}
 				}
 			}
+			HAL_Delay(500);
+			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 			*/
+
 			mmode = 0;
 		}
 		//a = TIM1->CNT;
@@ -331,7 +377,7 @@ static void MX_TIM1_Init(void)
   }
   sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
   sSlaveConfig.InputTrigger = TIM_TS_TI1F_ED;
-  sSlaveConfig.TriggerFilter = 12;
+  sSlaveConfig.TriggerFilter = 15;
   if (HAL_TIM_SlaveConfigSynchro(&htim1, &sSlaveConfig) != HAL_OK)
   {
     Error_Handler();
@@ -368,7 +414,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 79;
+  htim2.Init.Prescaler = 89;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 9999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -441,7 +487,7 @@ static void MX_TIM3_Init(void)
   }
   sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
   sSlaveConfig.InputTrigger = TIM_TS_TI1F_ED;
-  sSlaveConfig.TriggerFilter = 12;
+  sSlaveConfig.TriggerFilter = 15;
   if (HAL_TIM_SlaveConfigSynchro(&htim3, &sSlaveConfig) != HAL_OK)
   {
     Error_Handler();
@@ -478,7 +524,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 79;
+  htim4.Init.Prescaler = 89;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 9999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
