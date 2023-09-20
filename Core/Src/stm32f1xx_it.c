@@ -232,9 +232,7 @@ void EXTI1_IRQHandler(void)
 void TIM1_UP_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_IRQn 0 */
-	if(status == u_turn || status == turn_right_90 || status == turn_right_45 || status == straight){
-		status = 0;
-	}
+	status = 0;
   /* USER CODE END TIM1_UP_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_IRQn 1 */
@@ -248,9 +246,7 @@ void TIM1_UP_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-	if(status == turn_left_90 || status == turn_left_45){
-		status = 0;
-	}
+	status = 0;
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */

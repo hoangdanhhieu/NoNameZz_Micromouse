@@ -26,8 +26,8 @@
 
 #define grid_size           10
 #define square_size         300
-#define halfSize_MicroMouse 33
-#define wheels_radius       16
+#define halfSize_MicroMouse 37
+#define wheels_radius       17
 #define encoder_resolution  40
 #define length_MicroMouse   97
 #define d1                  28      //length between wheel and rear

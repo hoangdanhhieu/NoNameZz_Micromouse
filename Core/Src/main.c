@@ -68,8 +68,8 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
-const int32_t speed_levels[3][2] = { { 1000, 1000 }, { 1100, 1100 }, { 3000, 3000 }};
-int32_t PID_params[3][3] = {{16, 0, 0}, {50, 30, 0}, {0, 0, 0}}; //{KP, KI, KD}
+const int32_t speed_levels[2] = { 4000, 7000 };
+int32_t PID_params[3][3] = {{45, 0, 0}, {40, 0, 0}, {65, 0, 0}}; //{KP, KI, KD}
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 volatile uint16_t adc_value[4];
@@ -122,7 +122,7 @@ int main(void)
 	HAL_Delay(2000);
 	mmode = 0;
 	status = 0;
-	current_speed = 1;
+	current_speed = 0;
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 4);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
@@ -141,19 +141,12 @@ int main(void)
 		if (mmode == 1) {
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
-
+			uint8_t d;
 
 			HAL_Delay(2000);
-			uint8_t d;
-			TIM1->CNT = 0;
-			TIM3->CNT = 0;
-			turn_right45(&d);
-			HAL_Delay(100);
-			turn_right45(&d);
-			HAL_Delay(100);
-			turn_right45(&d);
-			HAL_Delay(100);
-			turn_right45(&d);
+			u_turnf(&d);
+			//go_straight(600,true);
+
 			/*
 			go_straight(square_size, false);
 
@@ -186,9 +179,17 @@ int main(void)
 			mmode = 0;
 		}
 		if (mmode == 2) {
-			/*
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+			for(int i = 10; i <= 50; i+=5){
+				HAL_Delay(2000);
+				PID_params[current_speed][0] = i;
+				c = i;
+				TIM1->CNT = 0;
+				TIM3->CNT = 0;
+				go_straight(5000, true);
+			}
+			/*
 			HAL_Delay(5000);
 			uint8_t d = north;
 			for(uint16_t i = 0; i <= path_index; i++){
@@ -414,7 +415,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 89;
+  htim2.Init.Prescaler = 39;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 9999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -524,7 +525,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 89;
+  htim4.Init.Prescaler = 39;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 9999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

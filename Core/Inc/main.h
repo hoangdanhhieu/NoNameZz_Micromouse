@@ -44,7 +44,7 @@ extern "C" {
 extern uint8_t maze[grid_size][grid_size];
 extern const uint8_t starting_coordinates[2];
 extern const uint8_t ending_coordinates[2];
-extern const int32_t speed_levels[3][2];
+extern const int32_t speed_levels[2];
 extern int32_t PID_params[3][3];
 extern bool visited[grid_size][grid_size];
 extern TIM_HandleTypeDef htim1;

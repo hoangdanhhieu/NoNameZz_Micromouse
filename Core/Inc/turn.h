@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 
-extern const int32_t speed_levels[3][2];
+extern const int32_t speed_levels[2];
 extern int32_t PID_params[3][3];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
@@ -33,8 +33,6 @@ void turn_right45();
 void turn_left90(uint8_t *direction);
 void turn_right90(uint8_t *direction);
 void go_straight(float distance, bool brakee);
-void backwards(float distance, bool brakee);
 void brake();
-void PID(uint8_t d);
 
 #endif /* INC_TURN_H_ */
