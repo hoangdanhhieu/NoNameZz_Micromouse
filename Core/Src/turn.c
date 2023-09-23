@@ -20,8 +20,8 @@ void u_turnf(uint8_t *direction) {
 		case north: *direction = south;  break;
 		case south: *direction = north;  break;
 	}
-	status = u_turn;
 
+	status = u_turn;
 	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en));
 	TIM1->CNT = 0;
 	TIM3->CNT = 0;
@@ -30,10 +30,12 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
 	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (5000 - 2500 * round((TIM3->CNT)/turn90_arc_en)));
+		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (2100 - 1000 * round((TIM3->CNT)/turn90_arc_en)));
 	}
 	brake();
-	HAL_Delay(1000);
+
+	HAL_Delay(500);
+
 	status = u_turn;
 	__HAL_TIM_SET_AUTORELOAD(&htim1, round(turn90_arc_en));
 	TIM1->CNT = 0;
@@ -42,9 +44,8 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
-
 	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period - (3000 - 0 * round((TIM1->CNT)/turn90_arc_en)));
+		__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period - (1000 + 200 * round((TIM1->CNT)/turn90_arc_en)));
 	}
 	brake();
 
@@ -61,7 +62,7 @@ void turn_left45() {
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - 3400);
 	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (4000 - 2100 * round((TIM3->CNT)/turn45_arc_en)));
+		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (2000 - 1000 * round((TIM3->CNT)/turn45_arc_en)));
 	}
 	brake();
 }
@@ -76,7 +77,7 @@ void turn_right45() {
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
 	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period - (4000 - 2100 * round((TIM1->CNT)/turn45_arc_en)));
+		__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period - (2000 - 1000 * round((TIM1->CNT)/turn45_arc_en)));
 	}
 	brake();
 }
@@ -99,7 +100,8 @@ void turn_left90(uint8_t *direction) {
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
 
 	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (5000 - 2500 * round((TIM3->CNT)/turn90_arc_en)));
+		a  = TIM3 -> CNT;
+		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (2100 - 1000 * round((TIM3->CNT)/turn90_arc_en)));
 	}
 	brake();
 }
@@ -121,7 +123,7 @@ void turn_right90(uint8_t *direction) {
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
 
 	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period - (5000 - 2500 * round((TIM1->CNT)/turn90_arc_en)));
+		__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period - (2100 - 1100 * round((TIM1->CNT)/turn90_arc_en)));
 	}
 	brake();
 }

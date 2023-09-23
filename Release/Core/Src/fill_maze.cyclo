@@ -1,0 +1,3 @@
+../Core/Src/fill_maze.c:277:6:found	4
+../Core/Src/fill_maze.c:295:6:set_wall	29
+../Core/Src/fill_maze.c:24:6:start_fill	95

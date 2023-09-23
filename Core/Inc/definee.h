@@ -26,7 +26,7 @@
 
 #define grid_size           10
 #define square_size         300
-#define halfSize_MicroMouse 37
+#define halfSize_MicroMouse 36
 #define wheels_radius       17
 #define encoder_resolution  40
 #define length_MicroMouse   97
