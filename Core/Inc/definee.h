@@ -26,15 +26,15 @@
 
 #define grid_size           10
 #define square_size         300
-#define halfSize_MicroMouse 36
+#define halfSize_MicroMouse 38
 #define wheels_radius       17
 #define encoder_resolution  40
 #define length_MicroMouse   97
 #define d1                  28      //length between wheel and rear
 
-#define leftWallValue  5000 //100
-#define rightWallValue 5000 //100
-#define frontWallValue 5000 //350
+#define leftWallValue  100
+#define rightWallValue 100
+#define frontWallValue 350
 
 #define left_sensor45 adc_value[2]
 #define right_sensor45 adc_value[1]

@@ -22,6 +22,7 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 extern volatile uint8_t current_speed;
+extern uint32_t adc_average_value[4];
 extern volatile int8_t status;
 extern volatile uint16_t adc_value[4];
 extern int a, b, c, d, e;
@@ -33,6 +34,7 @@ void turn_right45();
 void turn_left90(uint8_t *direction);
 void turn_right90(uint8_t *direction);
 void go_straight(float distance, bool brakee);
+void average_adc();
 void brake();
 
 #endif /* INC_TURN_H_ */

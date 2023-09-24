@@ -51,6 +51,7 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
+extern uint32_t adc_average_value[4];
 extern ADC_HandleTypeDef hadc1;
 extern volatile uint8_t current_speed;
 extern volatile uint8_t mmode;
