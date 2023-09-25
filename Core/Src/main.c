@@ -69,10 +69,10 @@ static void MX_TIM4_Init(void);
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
 const int32_t speed_levels[2] = { 2000, 3000 };
-int32_t PID_params[3][3] = {{32, 0, 30}, {45, 0, 30}, {30, 0, 0}}; //{KP, KI, KD}
+int32_t PID_params[3][3] = {{32, 0, 30}, {45, 0, 30}, {10, 0, 0}}; //{KP, KI, KD}
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
-volatile uint16_t adc_value[4];
+volatile uint16_t adc_value[200];
 uint32_t adc_average_value[4];
 volatile uint8_t current_speed;
 volatile uint8_t mmode;
@@ -125,7 +125,7 @@ int main(void)
 	mmode = 0;
 	status = 0;
 	current_speed = 0;
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 4);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 200);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);

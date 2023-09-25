@@ -19,7 +19,7 @@ extern const uint8_t starting_coordinates[2];
 extern const uint8_t ending_coordinates[2];
 extern uint8_t maze[grid_size][grid_size];
 extern bool visited[grid_size][grid_size];
-extern volatile uint16_t adc_value[4];
+extern volatile uint16_t adc_value[200];
 extern volatile uint8_t current_speed;
 void start_fill();
 #endif /* INC_FILL_MAZE_H_ */

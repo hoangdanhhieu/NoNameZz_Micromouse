@@ -24,7 +24,7 @@ extern TIM_HandleTypeDef htim4;
 extern volatile uint8_t current_speed;
 extern uint32_t adc_average_value[4];
 extern volatile int8_t status;
-extern volatile uint16_t adc_value[4];
+extern volatile uint16_t adc_value[200];
 extern int a, b, c, d, e;
 
 //void balance();

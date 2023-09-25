@@ -14,20 +14,17 @@ const float turn90_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (90.0/360) *
 const float turn45_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (45.0/360) * counts_per_1mm;
 
 void average_adc(){
-	uint16_t last_value = adc_value[0];
 	adc_average_value[0] = adc_average_value[1] = adc_average_value[2] = adc_average_value[3] = 0;
-	for(int i = 0; i < 20; i++){
-		while(last_value == adc_value[0]);
-		adc_average_value[0]+=adc_value[0];
-		adc_average_value[1]+=adc_value[1];
-		adc_average_value[2]+=adc_value[2];
-		adc_average_value[3]+=adc_value[3];
-		last_value = adc_value[0];
+	for(int i = 0; i < 50; i++){
+		adc_average_value[0]+=adc_value[4 * i];
+		adc_average_value[1]+=adc_value[4 * i + 1];
+		adc_average_value[2]+=adc_value[4 * i + 2];
+		adc_average_value[3]+=adc_value[4 * i + 3];
 	}
-	adc_average_value[0]/=20;
-	adc_average_value[1]/=20;
-	adc_average_value[2]/=20;
-	adc_average_value[3]/=20;
+	adc_average_value[0]/=50;
+	adc_average_value[1]/=50;
+	adc_average_value[2]/=50;
+	adc_average_value[3]/=50;
 }
 
 void u_turnf(uint8_t *direction) {
