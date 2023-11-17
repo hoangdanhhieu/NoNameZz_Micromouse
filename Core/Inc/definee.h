@@ -27,7 +27,7 @@
 #define grid_size            10
 #define square_size         300
 #define turning_radius      56
-#define dbtWheels_r 		  96
+#define dbtWheels_r 		  106
 #define dbtWheels_c		  48
 #define wheels_radius       29
 #define encoder_resolution 1232

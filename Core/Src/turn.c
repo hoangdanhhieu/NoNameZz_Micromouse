@@ -229,7 +229,7 @@ void go_straight(float distance, bool brakee) { //millimeter
 		if(useIRSensor){
 			P = P_params[0] * Err + D * 0.5;
 		} else {
-			P = P_params[1] * Err;
+			P = 0; //P_params[1] * Err;
 		}
 		P = max(-200, min(P, 200));
 		if(brakee && en > 600 && en - TIM3->CNT < 600){
@@ -243,8 +243,8 @@ void go_straight(float distance, bool brakee) { //millimeter
 	if(brakee){
 		brake(2);
 		uint16_t last = 65535;
-		while(last != TIM2->CNT){
-			last = TIM2->CNT;
+		while(last != TIM3->CNT){
+			last = TIM3->CNT;
 			HAL_Delay(100);
 		}
 	}
