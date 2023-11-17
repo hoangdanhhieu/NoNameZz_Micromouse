@@ -13,19 +13,19 @@
 #include "definee.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <vl53l0x_init.h>
 
 
-extern const int32_t speed_levels[2];
-extern int32_t PID_params[3][3];
+extern float P_params[2];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim4;
-extern volatile uint8_t current_speed;
-extern uint32_t adc_average_value[4];
 extern volatile int8_t status;
-extern volatile uint16_t adc_value[200];
+extern volatile uint8_t Rmode;
+extern const int32_t speed_levels[3];
+extern volatile uint8_t flag_uturn;
 extern int a, b, c, d, e;
+extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
 
 //void balance();
 void u_turnf(uint8_t *direction);
@@ -34,7 +34,8 @@ void turn_right45();
 void turn_left90(uint8_t *direction);
 void turn_right90(uint8_t *direction);
 void go_straight(float distance, bool brakee);
-void average_adc();
-void brake();
+void running_left_motor(uint8_t mode);
+void running_right_motor(uint8_t mode);
+void brake(uint8_t mode);
 
 #endif /* INC_TURN_H_ */

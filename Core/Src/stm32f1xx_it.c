@@ -55,7 +55,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN EV */
 
@@ -208,7 +208,7 @@ void EXTI0_IRQHandler(void)
   /* USER CODE END EXTI0_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
-	mmode = 2;
+	Rmode = 2;
   /* USER CODE END EXTI0_IRQn 1 */
 }
 
@@ -222,22 +222,28 @@ void EXTI1_IRQHandler(void)
   /* USER CODE END EXTI1_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
   /* USER CODE BEGIN EXTI1_IRQn 1 */
-	mmode = 1;
+	Rmode = 1;
   /* USER CODE END EXTI1_IRQn 1 */
 }
 
 /**
-  * @brief This function handles TIM1 update interrupt.
+  * @brief This function handles TIM2 global interrupt.
   */
-void TIM1_UP_IRQHandler(void)
+void TIM2_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_UP_IRQn 0 */
-	status = 0;
-  /* USER CODE END TIM1_UP_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  /* USER CODE BEGIN TIM1_UP_IRQn 1 */
+  /* USER CODE BEGIN TIM2_IRQn 0 */
 
-  /* USER CODE END TIM1_UP_IRQn 1 */
+  /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+  if(status == turn_right_90 || status == turn_right_45){
+	  status = 0;
+  } else if(status == u_turn){
+	  flag_uturn+=1;
+	  brake(0);
+  }
+
+  /* USER CODE END TIM2_IRQn 1 */
 }
 
 /**
@@ -246,10 +252,16 @@ void TIM1_UP_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-	status = 0;
+
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
+  if(status == turn_left_90 || status == turn_left_45 || status == straight){
+	  status = 0;
+  } else if(status == u_turn){
+	  flag_uturn+=1;
+	  brake(1);
+  }
 
   /* USER CODE END TIM3_IRQn 1 */
 }

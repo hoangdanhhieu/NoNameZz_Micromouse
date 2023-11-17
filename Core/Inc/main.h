@@ -33,6 +33,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 
 #include "path_optimization.h"
+#include <vl53l0x_init.h>
 #include "fill_maze.h"
 #include "turn.h"
 #include "definee.h"
@@ -40,22 +41,18 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
 extern uint8_t maze[grid_size][grid_size];
 extern const uint8_t starting_coordinates[2];
 extern const uint8_t ending_coordinates[2];
-extern const int32_t speed_levels[2];
-extern int32_t PID_params[3][3];
+extern const int32_t speed_levels[3];
+extern float P_params[2];
 extern bool visited[grid_size][grid_size];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim4;
-extern uint32_t adc_average_value[4];
-extern ADC_HandleTypeDef hadc1;
-extern volatile uint8_t current_speed;
-extern volatile uint8_t mmode;
-extern volatile uint16_t adc_value[200];
+extern volatile uint8_t Rmode;
+extern volatile uint8_t flag_uturn;
+extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
 extern int a, b, c, d, e;
 
 /* USER CODE END ET */
@@ -80,6 +77,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define xSHUT_0_Pin GPIO_PIN_1
+#define xSHUT_0_GPIO_Port GPIOA
+#define xSHUT_1_Pin GPIO_PIN_2
+#define xSHUT_1_GPIO_Port GPIOA
+#define xSHUT_2_Pin GPIO_PIN_3
+#define xSHUT_2_GPIO_Port GPIOA
+#define xSHUT_3_Pin GPIO_PIN_4
+#define xSHUT_3_GPIO_Port GPIOA
+#define xSHUT_4_Pin GPIO_PIN_5
+#define xSHUT_4_GPIO_Port GPIOA
+#define xSHUT_5_Pin GPIO_PIN_6
+#define xSHUT_5_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

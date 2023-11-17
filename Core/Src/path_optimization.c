@@ -10,8 +10,8 @@
 
 const int8_t move[4][3] = {{0, -1, 8}, {0, 1, 4}, {-1, 0, 2}, {1, 0, 1}};
 const float half_diagonal = sqrt(pow(square_size/2, 2) + pow(square_size/2, 2));
-const float offset45 = (float)tan(22.5 * M_PI / 180) * halfSize_MicroMouse;
-const float offset90 = halfSize_MicroMouse;
+const float offset45 = (float)tan(22.5 * M_PI / 180) * dbtWheels_r;
+const float offset90 = dbtWheels_r;
 
 int16_t temp[grid_size * grid_size][3];
 float shortestPath[grid_size * grid_size * 4];
@@ -72,7 +72,7 @@ void findShortestPath(){
         if(temp[curr][1] > last_y){
             switch(direction){
                 case west:
-                    add_path(offset45, turn_left_45, half_diagonal - offset45, south_west);
+                    add_path(offset45 - dbtWheels_c, turn_left_45, half_diagonal - offset45 - dbtWheels_c, south_west);
                     break;
                 case east:
                     add_path(offset45, turn_right_45, half_diagonal - offset45, south_east);
@@ -81,7 +81,7 @@ void findShortestPath(){
                     shortestPath[path_index]+=square_size;
                     break;
                 case north_west:
-                    add_path(offset90, turn_left_90, half_diagonal - offset90, south_west);
+                    add_path(offset90 - dbtWheels_c, turn_left_90, half_diagonal - offset90 - dbtWheels_c, south_west);
                     break;
                 case north_east:
                     add_path(offset90, turn_right_90, half_diagonal - offset90, south_east);
@@ -97,7 +97,7 @@ void findShortestPath(){
                     if(lastt_x > last_x){
                         shortestPath[path_index]+=half_diagonal;
                     } else {
-                        add_path(offset45, turn_left_45, square_size - offset45, south);
+                        add_path(offset45 - dbtWheels_c, turn_left_45, square_size - offset45 - dbtWheels_c, south);
                     }
             }
         } else if(temp[curr][1] < last_y){
@@ -106,7 +106,7 @@ void findShortestPath(){
                     add_path(offset45, turn_right_45, half_diagonal - offset45, north_west);
                     break;
                 case east:
-                    add_path(offset45, turn_left_45, half_diagonal - offset45, north_east);
+                    add_path(offset45 - dbtWheels_c, turn_left_45, half_diagonal - offset45 - dbtWheels_c, north_east);
                     break;
                 case north:
                     shortestPath[path_index]+=square_size;
@@ -115,7 +115,7 @@ void findShortestPath(){
                     add_path(offset90, turn_right_90, half_diagonal - offset90, north_west);
                     break;
                 case south_east:
-                    add_path(offset90, turn_left_90, half_diagonal - offset90, north_east);
+                    add_path(offset90 - dbtWheels_c, turn_left_90, half_diagonal - offset90 - dbtWheels_c, north_east);
                     break;
                 case north_west:
                     if(lastt_x > last_x){
@@ -128,7 +128,7 @@ void findShortestPath(){
                     if(lastt_x < last_x){
                         shortestPath[path_index]+=half_diagonal;
                     } else {
-                        add_path(offset45, turn_left_45, square_size - offset45, north);
+                        add_path(offset45 - dbtWheels_c, turn_left_45, square_size - offset45 - dbtWheels_c, north);
                     }
             }
         } else if(temp[curr][0] < last_x){
@@ -137,20 +137,20 @@ void findShortestPath(){
                     shortestPath[path_index]+=square_size;
                     break;
                 case north:
-                    add_path(offset45, turn_left_45, half_diagonal - offset45, north_west);
+                    add_path(offset45 - dbtWheels_c, turn_left_45, half_diagonal - offset45 - dbtWheels_c, north_west);
                     break;
                 case south:
                     add_path(offset45, turn_right_45, half_diagonal - offset45, south_west);
                     break;
                 case north_east:
-                    add_path(offset90, turn_left_90, half_diagonal - offset90, north_west);
+                    add_path(offset90 - dbtWheels_c, turn_left_90, half_diagonal - offset90 - dbtWheels_c, north_west);
                     break;
                 case south_east:
                     add_path(offset90, turn_right_90, half_diagonal - offset90, south_west);
                     break;
                 case north_west:
                     if(lastt_x > last_x){
-                        add_path(offset45, turn_left_45, square_size - offset45, west);
+                        add_path(offset45 - dbtWheels_c, turn_left_45, square_size - offset45 - dbtWheels_c, west);
                     } else {
                         shortestPath[path_index]+=half_diagonal;
                     }
@@ -171,13 +171,13 @@ void findShortestPath(){
                     add_path(offset45, turn_right_45, half_diagonal - offset45, north_east);
                     break;
                 case south:
-                    add_path(offset45, turn_left_45, half_diagonal - offset45, south_east);
+                    add_path(offset45 - dbtWheels_c, turn_left_45, half_diagonal - offset45 - dbtWheels_c, south_east);
                     break;
                 case north_west:
                     add_path(offset90, turn_right_90, half_diagonal - offset90, north_east);
                     break;
                 case south_west:
-                    add_path(offset90, turn_left_90, half_diagonal - offset90, south_east);
+                    add_path(offset90 - dbtWheels_c, turn_left_90, half_diagonal - offset90 - dbtWheels_c, south_east);
                     break;
                 case north_east:
                     if(lastt_x < last_x){
@@ -188,7 +188,7 @@ void findShortestPath(){
                     break;
                 case south_east:
                     if(lastt_x < last_x){
-                        add_path(offset45, turn_left_45, square_size - offset45, east);
+                        add_path(offset45 - dbtWheels_c, turn_left_45, square_size - offset45 - dbtWheels_c, east);
                     } else {
                         shortestPath[path_index]+=half_diagonal;
                     }

@@ -24,29 +24,27 @@
 #define turn_right_45 -2
 #define turn_right_90 -1
 
-#define grid_size           10
+#define grid_size            10
 #define square_size         300
-#define halfSize_MicroMouse 38
-#define wheels_radius       17
-#define encoder_resolution  40
-#define length_MicroMouse   97
-#define d1                  28      //length between wheel and rear
+#define turning_radius      56
+#define dbtWheels_r 		  96
+#define dbtWheels_c		  48
+#define wheels_radius       29
+#define encoder_resolution 1232
 
-#define leftWallValue  100
-#define rightWallValue 100
-#define frontWallValue 350
+#define HasleftWallValue_45  310
+#define HasrightWallValue_45  310
+#define HasfrontWallValue  400
 
-#define left_sensor45 adc_value[2]
-#define right_sensor45 adc_value[1]
-#define left_sensor_front adc_value[3]
-#define right_sensor_front adc_value[0]
+#define HasleftWallValue_90  150
+#define HasrightWallValue_90  150
 
-#define R_Motor1 TIM_CHANNEL_2
-#define R_Motor2 TIM_CHANNEL_1
-#define L_Motor1 TIM_CHANNEL_2
-#define L_Motor2 TIM_CHANNEL_1
+#define leftWallValue 250
+#define rightWallValue 250// 100
 
-const static float d2 = (float)(square_size - (halfSize_MicroMouse * 2))/2;
+#define n_vl53l0x 6
+
+const static float WidthOESide = (float)(square_size - dbtWheels_r)/2;
 
 
 #endif /* INC_DEFINEE_H_ */

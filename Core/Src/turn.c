@@ -5,235 +5,264 @@
  *      Author: Admin
  */
 #include "turn.h"
+#include "math.h"
+
+#define max(a,b)             \
+({                           \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a > _b ? _a : _b;       \
+})
+
+#define min(a,b)             \
+({                           \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a < _b ? _a : _b;       \
+})
 
 const float wheels_arc = (float)wheels_radius * M_PI * 2;
 const float counts_per_1mm = (float)encoder_resolution / wheels_arc;
 
-const float uturn_arc_en = (float)halfSize_MicroMouse * M_PI * 2 * (180.0/360) * counts_per_1mm;
-const float turn90_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (90.0/360) * counts_per_1mm;
-const float turn45_arc_en = (float)halfSize_MicroMouse * M_PI * 4 * (45.0/360) * counts_per_1mm;
+const float uturn_arc_en = (float)turning_radius * M_PI * 2 * (180.0/360) * counts_per_1mm;
+const float turn90_arc_en = (float)turning_radius * M_PI * 4 * (90.0/360) * counts_per_1mm;
+const float turn45_arc_en = (float)turning_radius * M_PI * 4 * (45.0/360) * counts_per_1mm;
+volatile uint8_t flag_uturn;
 
-void average_adc(){
-	adc_average_value[0] = adc_average_value[1] = adc_average_value[2] = adc_average_value[3] = 0;
-	for(int i = 0; i < 50; i++){
-		adc_average_value[0]+=adc_value[4 * i];
-		adc_average_value[1]+=adc_value[4 * i + 1];
-		adc_average_value[2]+=adc_value[4 * i + 2];
-		adc_average_value[3]+=adc_value[4 * i + 3];
+
+void running_left_motor(uint8_t mode){
+	if(mode == 0){
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, speed_levels[Rmode]);
+	} else {
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, speed_levels[Rmode]);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
 	}
-	adc_average_value[0]/=50;
-	adc_average_value[1]/=50;
-	adc_average_value[2]/=50;
-	adc_average_value[3]/=50;
+}
+
+void running_right_motor(uint8_t mode){
+	if(mode == 0){
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, speed_levels[Rmode]);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+	} else {
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, speed_levels[Rmode]);
+	}
 }
 
 void u_turnf(uint8_t *direction) {
-	HAL_Delay(200);
 	switch(*direction){
 		case west:  *direction = east;   break;
 		case east:  *direction = west;   break;
 		case north: *direction = south;  break;
 		case south: *direction = north;  break;
 	}
-
+	uint16_t en = round(uturn_arc_en + uturn_arc_en*0.03);
+	__HAL_TIM_SET_COUNTER(&htim2, en);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, en);
 	status = u_turn;
-	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en));
-	TIM1->CNT = 0;
-	TIM3->CNT = 0;
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
-	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (2100 - 1000 * round((TIM3->CNT)/turn90_arc_en)));
+	flag_uturn = 0;
+	brake(2);
+	uint16_t speed = 300;
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, speed);
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, speed);
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+	int32_t P;
+	while(flag_uturn == 0){
+		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, speed + P);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, speed - P);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+		if(en - TIM3->CNT < 200){
+			speed = 200;
+		}
+		a = (int32_t)en - TIM2->CNT;
+		b = TIM3->CNT;
 	}
-	brake();
-
-	HAL_Delay(500);
-
-	status = u_turn;
-	__HAL_TIM_SET_AUTORELOAD(&htim1, round(turn90_arc_en));
-	TIM1->CNT = 0;
-	TIM3->CNT = 0;
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
-	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period - (1000 + 200 * round((TIM1->CNT)/turn90_arc_en)));
+	while(flag_uturn < 2);
+	status = 0;
+	brake(2);
+	uint16_t last = 65535;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(100);
 	}
-	brake();
-
 }
 
 void turn_left45() {
-	 HAL_Delay(200);
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn45_arc_en));
-	TIM1->CNT = 0;
-	TIM3->CNT = 0;
+
 	status = turn_left_45;
 
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - 3400);
-	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (2000 - 1000 * round((TIM3->CNT)/turn45_arc_en)));
-	}
-	brake();
+	brake(0);
+	running_right_motor(0);
+	while(status != 0);
+	brake(1);
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
 }
 
 void turn_right45() {
-	HAL_Delay(200);
-	__HAL_TIM_SET_AUTORELOAD(&htim1, round(turn45_arc_en));
-	TIM1->CNT = 0;
-	TIM3->CNT = 0;
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, round(turn45_arc_en));
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+
 	status = turn_right_45;
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
-	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period - (2000 - 1000 * round((TIM1->CNT)/turn45_arc_en)));
-	}
-	brake();
+
+	brake(1);
+	running_left_motor(0);
+	while(status != 0);
+	brake(0);
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
 }
 
 void turn_left90(uint8_t *direction) {
-	HAL_Delay(200);
 	switch(*direction){
 		case west:  *direction = south; break;
 		case east:  *direction = north; break;
 		case north: *direction = west;  break;
 		case south: *direction = east;  break;
 	}
+	uint16_t last = 65535;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(100);
+	}
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en));
-	TIM1->CNT = 0;
-	TIM3->CNT = 0;
 	status = turn_left_90;
 
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
-
-	while(status != 0){
-		a  = TIM3 -> CNT;
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - (2100 - 1000 * round((TIM3->CNT)/turn90_arc_en)));
+	brake(0);
+	running_right_motor(0);
+	while(status != 0);
+	brake(1);
+	last = 65535;
+	while(last != TIM3->CNT){
+		last = TIM3->CNT;
+		HAL_Delay(100);
 	}
-	brake();
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
 }
 
 void turn_right90(uint8_t *direction) {
-	HAL_Delay(200);
 	switch(*direction){
 		case west:  *direction = north; break;
 		case east:  *direction = south; break;
 		case north: *direction = east;  break;
 		case south: *direction = west;  break;
 	}
-	__HAL_TIM_SET_AUTORELOAD(&htim1, round(turn90_arc_en));
-	TIM1->CNT = 0;
-	TIM3->CNT = 0;
-	status = turn_right_90;
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
-
-	while(status != 0){
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period - (2100 - 1000 * round((TIM1->CNT)/turn90_arc_en)));
+	uint16_t last = 65535;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(100);
 	}
-	brake();
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, round(turn90_arc_en - turn90_arc_en*0.1));
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+	status = turn_right_90;
+
+	brake(1);
+	running_left_motor(0);
+	while(status != 0);
+	brake(0);
+	last = 65535;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(100);
+	}
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
 }
 
 void go_straight(float distance, bool brakee) { //millimeter
-	HAL_Delay(200);
 	uint16_t en = round(distance * counts_per_1mm);
-	__HAL_TIM_SET_AUTORELOAD(&htim1, en);
-	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, en);
 	status = straight;
-	TIM1 -> CNT = 0;
-	TIM3 -> CNT = 0;
-	int32_t Err, pErr, P, D, It, total;
-	int32_t temp_1, temp_3;
+	int32_t Err, P, D, old_Error = 0;
+	int32_t temp_1, temp_2;
 	bool useIRSensor = true;
+	uint16_t left_sensor45, right_sensor45, left_sensor90, right_sensor90;
+	uint16_t speed = speed_levels[Rmode];
 	while(status != 0){
-		average_adc();
-		if(left_sensor45 > leftWallValue && right_sensor45 > rightWallValue){
-			Err = left_sensor45 - right_sensor45 - 10;
-			if(!useIRSensor){
-				pErr = 0;
-				It = 0;
-				useIRSensor = true;
-			}
-		} else if(left_sensor45 > leftWallValue){
-			Err = left_sensor45 - leftWallValue;
-			if(!useIRSensor){
-				pErr = 0;
-				It = 0;
-				useIRSensor = true;
-			}
-		} else if(right_sensor45 > rightWallValue){
-			Err = rightWallValue - right_sensor45;
-			if(!useIRSensor){
-				pErr = 0;
-				It = 0;
-				useIRSensor = true;
-			}
+		vl53l0x_GetRanging_now(pMyDevice[5], &left_sensor90);
+		vl53l0x_GetRanging_now(pMyDevice[2], &left_sensor45);
+		vl53l0x_GetRanging_now(pMyDevice[3], &right_sensor45);
+		vl53l0x_GetRanging_now(pMyDevice[0], &right_sensor90);
+		if(left_sensor45 < HasleftWallValue_45 && right_sensor45 < HasrightWallValue_45
+				&& left_sensor90 < HasleftWallValue_90 && right_sensor90 < HasrightWallValue_90){
+			Err = right_sensor45 - left_sensor45 + 10;
+			D = Err - old_Error;
+			old_Error = Err;
+			useIRSensor = true;
+		} else if(left_sensor45 < HasleftWallValue_45 && left_sensor90 < HasleftWallValue_90){
+			Err = (int32_t)leftWallValue - (int32_t)left_sensor45;
+			D = Err - old_Error;
+			old_Error = Err;
+			useIRSensor = true;
+		} else if(right_sensor45 < HasrightWallValue_45 && right_sensor90 < HasrightWallValue_90){
+			Err = (int32_t)right_sensor45 - (int32_t)rightWallValue;
+			D = Err - old_Error;
+			old_Error = Err;
+			useIRSensor = true;
 		} else {
-			temp_1 = TIM1->CNT;
-			temp_3 = TIM3->CNT;
-			Err = temp_3 - temp_1;
-			if(useIRSensor){
-				pErr = 0;
-				It = 0;
-				useIRSensor = false;
-			}
-			a = TIM1->CNT;
+			temp_1 = TIM2->CNT;
+			temp_2 = TIM3->CNT;
+			Err = temp_2 - temp_1;
+			useIRSensor = false;
+			a = TIM2->CNT;
 			b = TIM3->CNT;
 		}
 		if(useIRSensor){
-			P = PID_params[2][0] * Err;
-			It = It + (Err * PID_params[2][1]);
-			if(It > 200){ It = 200; }
-			if(It < -200){ It = -200; }
-			D = PID_params[2][2] * (Err - pErr);
-			pErr = Err;
-			total = P + It + D;
+			P = P_params[0] * Err + D * 0.5;
 		} else {
-			P = PID_params[current_speed][0] * Err;
-			It = It + (Err * PID_params[current_speed][1]);
-			if(It > 200){ It = 200; }
-			if(It < -200){ It = -200; }
-			D = PID_params[current_speed][2] * (Err - pErr);
-			pErr = Err;
-			total = P + It + D;
+			P = P_params[1] * Err;
 		}
-		uint16_t speed = speed_levels[current_speed];
-		if(current_speed == 1){
-			if(TIM1->CNT < en/2){
-				speed = speed_levels[1] - 500*(1 - (float)TIM1->CNT/(en/2));
-			} else{
-				speed = speed_levels[1] - 500*((float)TIM1->CNT/en * 2 - 1);
-			}
+		P = max(-200, min(P, 200));
+		if(brakee && en > 600 && en - TIM3->CNT < 600){
+			speed = 200;
 		}
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-		__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period - speed - total);
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-		__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period - speed + total);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, speed + P);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, speed - P);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
 	}
 	if(brakee){
-		brake();
+		brake(2);
+		uint16_t last = 65535;
+		while(last != TIM2->CNT){
+			last = TIM2->CNT;
+			HAL_Delay(100);
+		}
 	}
 }
 
-void brake(){
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor1, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim2, L_Motor2, htim2.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor1, htim4.Init.Period);
-	__HAL_TIM_SET_COMPARE(&htim4, R_Motor2, htim4.Init.Period);
-	TIM1->CNT = 0;
-	TIM3->CNT = 0;
+void brake(uint8_t mode){
+	if(mode == 0){
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, htim1.Init.Period);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, htim1.Init.Period);
+	} else if(mode == 1){
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, htim1.Init.Period);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, htim1.Init.Period);
+	} else {
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, htim1.Init.Period);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, htim1.Init.Period);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, htim1.Init.Period);
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, htim1.Init.Period);
+	}
+
 }
 
