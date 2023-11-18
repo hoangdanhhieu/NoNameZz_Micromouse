@@ -64,7 +64,7 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
-const int32_t speed_levels[3] = {0, 350, 999 };
+const int32_t speed_levels[3] = {0, 400, 999 };
 float P_params[2] = {1, 5};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
@@ -167,12 +167,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1) {
 
-		vl53l0x_GetRanging_now(pMyDevice[0], &ts1);
-		vl53l0x_GetRanging_now(pMyDevice[1], &ts2);
-		vl53l0x_GetRanging_now(pMyDevice[2], &ts3);
-		vl53l0x_GetRanging_now(pMyDevice[3], &ts4);
-		vl53l0x_GetRanging_now(pMyDevice[4], &ts5);
-		vl53l0x_GetRanging_now(pMyDevice[5], &ts6);
+		vl53l0x_GetRanging4_now(pMyDevice[0], pMyDevice[1], pMyDevice[2], pMyDevice[3],
+				&ts1, &ts2, &ts3, &ts4);
+		vl53l0x_GetRanging_last(pMyDevice[4], &ts5);
+		vl53l0x_GetRanging_last(pMyDevice[5], &ts6);
 		a = TIM2->CNT;
 		b = TIM3->CNT;
     /* USER CODE END WHILE */
@@ -183,6 +181,7 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(2000);
 			start_fill();
+			//go_straight(300, 1);
 			//findShortestPath();
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
@@ -191,32 +190,7 @@ int main(void)
 		if (Rmode == 2) {
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
-			/*
-			HAL_Delay(5000);
-			uint8_t d = north;
-			for(uint16_t i = 0; i <= path_index; i++){
-				switch((int32_t)shortestPath[i]){
-					case turn_left_90:
-						turn_left90(&d);
-						break;
-					case turn_right_90:
-						turn_right90(&d);
-						break;
-					case turn_left_45:
-						turn_left45(&d);
-						break;
-					case turn_right_45:
-						turn_right45(&d);
-						break;
-					default:
-						if(shortestPath[i] < 0){
-							backwards(shortestPath[i], true);
-						} else {
-							go_straight(shortestPath[i], true);
-						}
-				}
-			}
-			*/
+
 			HAL_Delay(500);
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);

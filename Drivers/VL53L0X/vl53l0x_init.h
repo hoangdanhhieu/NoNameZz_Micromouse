@@ -9,3 +9,9 @@ VL53L0X_Error vl53l0x_GetRanging_now(VL53L0X_DEV pMyDevice, uint16_t *result);
 VL53L0X_Error WaitStopCompleted(VL53L0X_DEV Dev);
 VL53L0X_Error WaitMeasurementDataReady(VL53L0X_DEV Dev);
 VL53L0X_Error vl53l0x_GetRanging_last(VL53L0X_DEV pMyDevice, uint16_t *result);
+VL53L0X_Error vl53l0x_GetRanging2_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDevice2,
+												uint16_t *result1, uint16_t *result2);
+VL53L0X_Error vl53l0x_GetRanging4_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDevice2,
+											VL53L0X_DEV pMyDevice3, VL53L0X_DEV pMyDevice4,
+												uint16_t *result1, uint16_t *result2,
+													uint16_t *result3, uint16_t *result4);

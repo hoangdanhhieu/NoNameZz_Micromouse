@@ -33,11 +33,10 @@ void start_fill() {
 	maze[y - 1][x] |= bottom_wall;
 	direction = north;
 	bool frontfree, leftfree, rightfree;
-	uint16_t frontValue, leftValue, rightValue;
+	uint16_t frontValue, leftValue, rightValue, ttt;
 	while(1){
-		vl53l0x_GetRanging_now(pMyDevice[1], &frontValue);
-		vl53l0x_GetRanging_now(pMyDevice[2], &leftValue);
-		vl53l0x_GetRanging_now(pMyDevice[3], &rightValue);
+		vl53l0x_GetRanging4_now(pMyDevice[1], pMyDevice[2], pMyDevice[3], pMyDevice[4],
+				&frontValue, &leftValue, &rightValue, &ttt);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
