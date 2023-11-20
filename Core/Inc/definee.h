@@ -27,7 +27,7 @@
 #define grid_size            10
 #define square_size         300
 #define turning_radius      56
-#define dbtWheels_r 		  120
+#define dbtWheels_r 		  96
 #define dbtWheels_c		  48
 #define wheels_radius       29
 #define encoder_resolution 1232
@@ -39,10 +39,18 @@
 #define HasleftWallValue_90  170
 #define HasrightWallValue_90  170
 
-#define leftWallValue 250
-#define rightWallValue 250
+#define leftWallValue 240
+#define rightWallValue 240
 
 #define n_vl53l0x 6
+
+#define rightSensor90 pMyDevice[0]
+#define rightSensor0 pMyDevice[1]
+#define leftSensor45 pMyDevice[2]
+#define rightSensor45 pMyDevice[3]
+#define leftSensor0 pMyDevice[4]
+#define leftSensor90 pMyDevice[5]
+
 
 const static float WidthOESide = (float)(square_size - dbtWheels_r)/2;
 

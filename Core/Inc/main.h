@@ -53,8 +53,10 @@ extern TIM_HandleTypeDef htim3;
 extern volatile uint8_t Rmode;
 extern volatile uint8_t flag_uturn;
 extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
+extern uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
 extern int a, b, c, d, e;
-
+extern uint8_t debug;
+extern UART_HandleTypeDef huart3;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

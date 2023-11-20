@@ -45,6 +45,8 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
+UART_HandleTypeDef huart3;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -56,6 +58,7 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -64,16 +67,18 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
-const int32_t speed_levels[3] = {0, 400, 999 };
+const int32_t speed_levels[3] = {0, 350, 999 };
 float P_params[2] = {1, 5};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 volatile uint8_t current_speed;
 volatile uint8_t Rmode;
 volatile int8_t status;
+uint8_t debug;
 int a, b, c, d, e;
 int t1, t2, t3, t4;
 uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
+uint8_t uart_buffer[50];
 
 volatile int8_t status_debug;
 VL53L0X_Dev_t MyDevice[n_vl53l0x];
@@ -139,6 +144,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_I2C1_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
@@ -152,10 +158,15 @@ int main(void)
 
 	Rmode = 0;
 	status = 0;
+	debug = 1;
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, htim1.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, htim1.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, htim1.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, htim1.Init.Period);
+	if(debug){
+		sprintf(uart_buffer, "uart send data\n");
+		HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
+	}
 	HAL_Delay(2000);
 	sensor_init();
 	if(status_debug == VL53L0X_ERROR_NONE){
@@ -167,10 +178,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1) {
 
-		vl53l0x_GetRanging4_now(pMyDevice[0], pMyDevice[1], pMyDevice[2], pMyDevice[3],
-				&ts1, &ts2, &ts3, &ts4);
-		vl53l0x_GetRanging_last(pMyDevice[4], &ts5);
-		vl53l0x_GetRanging_last(pMyDevice[5], &ts6);
+		//vl53l0x_GetRanging4_now(pMyDevice[0], pMyDevice[1], pMyDevice[2], pMyDevice[3],
+				//&ts1, &ts2, &ts3, &ts4);
+		//vl53l0x_GetRanging_last(pMyDevice[4], &ts5);
+		//vl53l0x_GetRanging_last(pMyDevice[5], &ts6);
 		a = TIM2->CNT;
 		b = TIM3->CNT;
     /* USER CODE END WHILE */
@@ -181,7 +192,6 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(2000);
 			start_fill();
-			//go_straight(300, 1);
 			//findShortestPath();
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
@@ -461,6 +471,39 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -518,7 +561,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+int __io_putchar(int ch) {
+    ITM_SendChar(ch);
+    return ch;
+}
 /* USER CODE END 4 */
 
 /**

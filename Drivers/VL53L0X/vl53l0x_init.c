@@ -53,8 +53,26 @@ VL53L0X_Error vl53l0x_init(VL53L0X_DEV pMyDevice, VL53L0X_Version_t *pVersion, V
     if(Status == VL53L0X_ERROR_NONE){
         Status = VL53L0X_SetDeviceMode(pMyDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING); // Setup in single ranging mode
     }
+    if (Status == VL53L0X_ERROR_NONE) {
+            Status = VL53L0X_SetLimitCheckEnable(pMyDevice,
+            		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
+    }
+    if (Status == VL53L0X_ERROR_NONE) {
+        Status = VL53L0X_SetLimitCheckEnable(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
+    }
+    if (Status == VL53L0X_ERROR_NONE) {
+        Status = VL53L0X_SetLimitCheckValue(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+        		(FixPoint1616_t)(0.25*65536));
+    }
+    if (Status == VL53L0X_ERROR_NONE) {
+        Status = VL53L0X_SetLimitCheckValue(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+        		(FixPoint1616_t)(32*65536));
+    }
     if(Status == VL53L0X_ERROR_NONE){
-    	Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(pMyDevice, 100000);
+    	Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(pMyDevice, 30000);
     }
     HAL_Delay(10);
     if(Status == VL53L0X_ERROR_NONE){
@@ -108,7 +126,6 @@ VL53L0X_Error vl53l0x_GetRanging2_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDev
 				Status = VL53L0X_GetRangingMeasurementData(pMyDevice1, pRangingMeasurementData1);
 				*result1 = pRangingMeasurementData1->RangeMilliMeter;
 				VL53L0X_ClearInterruptMask(pMyDevice1, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-				VL53L0X_PollingDelay(pMyDevice1);
 				flag1 = 0;
 			}
 		}
@@ -118,7 +135,6 @@ VL53L0X_Error vl53l0x_GetRanging2_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDev
 				Status = VL53L0X_GetRangingMeasurementData(pMyDevice2, pRangingMeasurementData2);
 				*result2 = pRangingMeasurementData2->RangeMilliMeter;
 				VL53L0X_ClearInterruptMask(pMyDevice2, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-				VL53L0X_PollingDelay(pMyDevice2);
 				flag2 = 0;
 			}
 		}
@@ -164,7 +180,6 @@ VL53L0X_Error vl53l0x_GetRanging4_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDev
 				Status = VL53L0X_GetRangingMeasurementData(pMyDevice1, pRangingMeasurementData1);
 				*result1 = pRangingMeasurementData1->RangeMilliMeter;
 				VL53L0X_ClearInterruptMask(pMyDevice1, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-				VL53L0X_PollingDelay(pMyDevice1);
 				flag1 = 0;
 			}
 		}
@@ -174,7 +189,6 @@ VL53L0X_Error vl53l0x_GetRanging4_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDev
 				Status = VL53L0X_GetRangingMeasurementData(pMyDevice2, pRangingMeasurementData2);
 				*result2 = pRangingMeasurementData2->RangeMilliMeter;
 				VL53L0X_ClearInterruptMask(pMyDevice2, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-				VL53L0X_PollingDelay(pMyDevice2);
 				flag2 = 0;
 			}
 		}
@@ -184,7 +198,6 @@ VL53L0X_Error vl53l0x_GetRanging4_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDev
 				Status = VL53L0X_GetRangingMeasurementData(pMyDevice3, pRangingMeasurementData3);
 				*result3 = pRangingMeasurementData3->RangeMilliMeter;
 				VL53L0X_ClearInterruptMask(pMyDevice3, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-				VL53L0X_PollingDelay(pMyDevice3);
 				flag3 = 0;
 			}
 		}
@@ -194,7 +207,6 @@ VL53L0X_Error vl53l0x_GetRanging4_now(VL53L0X_DEV pMyDevice1, VL53L0X_DEV pMyDev
 				Status = VL53L0X_GetRangingMeasurementData(pMyDevice4, pRangingMeasurementData4);
 				*result4 = pRangingMeasurementData4->RangeMilliMeter;
 				VL53L0X_ClearInterruptMask(pMyDevice4, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-				VL53L0X_PollingDelay(pMyDevice4);
 				flag4 = 0;
 			}
 		}

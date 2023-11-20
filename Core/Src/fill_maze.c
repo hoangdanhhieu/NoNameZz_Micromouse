@@ -33,10 +33,14 @@ void start_fill() {
 	maze[y - 1][x] |= bottom_wall;
 	direction = north;
 	bool frontfree, leftfree, rightfree;
-	uint16_t frontValue, leftValue, rightValue, ttt;
+	uint16_t frontValue, leftValue, rightValue;
 	while(1){
-		vl53l0x_GetRanging4_now(pMyDevice[1], pMyDevice[2], pMyDevice[3], pMyDevice[4],
-				&frontValue, &leftValue, &rightValue, &ttt);
+		vl53l0x_GetRanging_now(rightSensor0, &frontValue);
+		vl53l0x_GetRanging_now(leftSensor45, &leftValue);
+		vl53l0x_GetRanging_now(rightSensor45, &rightValue);
+		ts1 = frontValue;
+		ts2 = leftValue;
+		ts3 = rightValue;
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
@@ -188,7 +192,7 @@ void start_fill() {
 							go_straight(WidthOESide - dbtWheels_c, 0);
 						}
 					} else {
-						stack[i][0] = stack[i][0] == turn_left_90 ? turn_right_90 : turn_left_90;
+						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
 						go_straight(square_size, 0);
 					}
 					break;
