@@ -232,7 +232,7 @@ void go_straight(float distance, bool brakee) { //millimeter
 	int32_t Err, P, D, old_Error = 0;
 	int32_t temp_1, temp_2;
 	bool useIRSensor = true;
-	uint16_t oe2 = WidthOESide - dbtWheels_c/2;
+	uint16_t oe2 = WidthOESide;
 	uint16_t left_sensor45, right_sensor45, left_sensor90, right_sensor90, right_sensor0 = 8000;
 	uint16_t speed = speed_levels[Rmode];
 	while(status != 0 && right_sensor0 > oe2){
