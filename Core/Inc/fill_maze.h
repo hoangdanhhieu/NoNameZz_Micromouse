@@ -21,6 +21,5 @@ extern bool visited[grid_size][grid_size];
 extern int8_t stack[grid_size * grid_size][3];
 extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
 extern uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
-extern uint8_t debug;
 void start_fill();
 #endif /* INC_FILL_MAZE_H_ */

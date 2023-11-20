@@ -28,7 +28,6 @@ extern const int32_t speed_levels[3];
 extern volatile uint8_t flag_uturn;
 extern int a, b, c, d, e;
 extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
-extern uint8_t debug;
 extern uint8_t uart_buffer[50];
 extern UART_HandleTypeDef huart3;
 

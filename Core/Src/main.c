@@ -74,7 +74,6 @@ bool visited[grid_size][grid_size];
 volatile uint8_t current_speed;
 volatile uint8_t Rmode;
 volatile int8_t status;
-uint8_t debug;
 int a, b, c, d, e;
 int t1, t2, t3, t4;
 uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
@@ -158,15 +157,14 @@ int main(void)
 
 	Rmode = 0;
 	status = 0;
-	debug = 1;
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, htim1.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, htim1.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, htim1.Init.Period);
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, htim1.Init.Period);
-	if(debug){
-		sprintf(uart_buffer, "uart send data\n");
+	#if debug == 1
+		sprintf((char*)uart_buffer, "uart send data\n");
 		HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
-	}
+	#endif
 	HAL_Delay(2000);
 	sensor_init();
 	if(status_debug == VL53L0X_ERROR_NONE){
@@ -177,13 +175,21 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-
-		//vl53l0x_GetRanging4_now(pMyDevice[0], pMyDevice[1], pMyDevice[2], pMyDevice[3],
-				//&ts1, &ts2, &ts3, &ts4);
-		//vl53l0x_GetRanging_last(pMyDevice[4], &ts5);
-		//vl53l0x_GetRanging_last(pMyDevice[5], &ts6);
-		a = TIM2->CNT;
-		b = TIM3->CNT;
+		#if debug == 1
+			c = HAL_GetTick();
+			vl53l0x_GetRanging_now(pMyDevice[0], &ts1);
+			vl53l0x_GetRanging_now(pMyDevice[1], &ts2);
+			vl53l0x_GetRanging_now(pMyDevice[2], &ts3);
+			vl53l0x_GetRanging_now(pMyDevice[3], &ts4);
+			vl53l0x_GetRanging_now(pMyDevice[4], &ts5);
+			vl53l0x_GetRanging_now(pMyDevice[5], &ts6);
+			HAL_Delay(100);
+			d = HAL_GetTick();
+			sprintf((char*)uart_buffer, "%d\n", d - c);
+			HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
+			a = TIM2->CNT;
+			b = TIM3->CNT;
+		#endif
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -192,6 +198,8 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(2000);
 			start_fill();
+
+
 			//findShortestPath();
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
