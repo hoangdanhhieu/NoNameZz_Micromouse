@@ -236,13 +236,9 @@ void TIM2_IRQHandler(void)
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-  if(status == turn_right_90 || status == turn_right_45){
+  if(status == turn_right_90 || status == turn_right_45 || status == u_turn){
 	  status = 0;
-  } else if(status == u_turn){
-	  flag_uturn+=1;
-	  brake(0);
   }
-
   /* USER CODE END TIM2_IRQn 1 */
 }
 
@@ -258,9 +254,6 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 1 */
   if(status == turn_left_90 || status == turn_left_45 || status == straight){
 	  status = 0;
-  } else if(status == u_turn){
-	  flag_uturn+=1;
-	  brake(1);
   }
 
   /* USER CODE END TIM3_IRQn 1 */

@@ -62,11 +62,6 @@ void u_turnf(uint8_t *direction) {
 		HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
 	#endif
 
-	running_left_motor(1, 500);
-	running_right_motor(1, 500);
-	HAL_Delay(50);
-	brake(2);
-
 	uint16_t last = 2702;
 	while(last != TIM3->CNT){
 		last = TIM3->CNT;
@@ -79,11 +74,10 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, en);
 	status = u_turn;
-	flag_uturn = 0;
 
 	uint16_t speed = 300;
 	int32_t P;
-	while(flag_uturn == 0){
+	while(status != 0){
 		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) *2;
 		running_left_motor(1, speed + P);
 		running_right_motor(0, speed - P);
@@ -93,11 +87,9 @@ void u_turnf(uint8_t *direction) {
 		a = (int32_t)en - TIM2->CNT;
 		b = TIM3->CNT;
 	}
-	while(flag_uturn < 2);
-	status = 0;
-	running_left_motor(1, 500);
+	running_left_motor(0, 500);
 	running_right_motor(1, 500);
-	HAL_Delay(50);
+	HAL_Delay(20);
 	brake(2);
 }
 
@@ -163,11 +155,12 @@ void turn_left90(uint8_t *direction) {
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	__HAL_TIM_SET_COUNTER(&htim2, 0);
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
-	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en + turn90_arc_en*0.1));
+	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en));
 	status = turn_left_90;
 
-	running_right_motor(0, 500);
-	while(status != 0);
+	while(status != 0){
+		running_right_motor(0, 300 + 200 * (float)TIM3->CNT/turn90_arc_en);
+	}
 	running_right_motor(1, 500);
 	HAL_Delay(50);
 	brake(1);
@@ -184,8 +177,8 @@ void turn_right90(uint8_t *direction) {
 	}
 
 	#if debug == 1
-		sprintf((char*)uart_buffer, "turn_right90\n");
-		HAL_UART_Transmit(&huart3, uart_buffer, sizeof(uart_buffer), 10);
+	sprintf((char*)uart_buffer, "turn_right90\n");
+	HAL_UART_Transmit(&huart3, uart_buffer, sizeof(uart_buffer), 10);
 	#endif
 
 	uint16_t last = 2702;
@@ -196,12 +189,17 @@ void turn_right90(uint8_t *direction) {
 
 	__HAL_TIM_SET_COUNTER(&htim2, 0);
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
-	__HAL_TIM_SET_AUTORELOAD(&htim2, round(turn90_arc_en - turn90_arc_en*0.05));
+	__HAL_TIM_SET_AUTORELOAD(&htim2, round(turn90_arc_en - turn90_arc_en *0.05));
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	status = turn_right_90;
 
-	running_left_motor(0, 500);
-	while(status != 0);
+	while(status != 0){
+		#if debug == 1
+		a = TIM2->CNT;
+		b = TIM3->CNT;
+		#endif
+		running_left_motor(0, 300 + 200 * (float)TIM1->CNT/turn90_arc_en);
+	}
 	running_left_motor(1, 500);
 	HAL_Delay(50);
 	brake(0);
@@ -217,6 +215,8 @@ void go_straight(float distance, bool brakee) { //millimeter
 	#endif
 
 	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) == htim1.Init.Period){
+		__HAL_TIM_SET_COUNTER(&htim2, 0);
+		__HAL_TIM_SET_COUNTER(&htim3, 0);
 		uint16_t last = 2702;
 		while(last != TIM3->CNT){
 			last = TIM3->CNT;
@@ -224,15 +224,15 @@ void go_straight(float distance, bool brakee) { //millimeter
 		}
 	}
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
-	__HAL_TIM_SET_AUTORELOAD(&htim3, en);
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, en + 100);
+	__HAL_TIM_SET_COUNTER(&htim2, 100);
+	__HAL_TIM_SET_COUNTER(&htim3, 100);
 
 	status = straight;
 	int32_t Err, P, D, old_Error = 0;
 	int32_t temp_1, temp_2;
 	bool useIRSensor = true;
-	uint16_t oe2 = WidthOESide;
+	uint16_t oe2 = WidthOESide + 50;
 	uint16_t left_sensor45, right_sensor45, left_sensor90, right_sensor90, right_sensor0 = 8000;
 	uint16_t speed = speed_levels[Rmode];
 	while(status != 0 && right_sensor0 > oe2){
@@ -267,10 +267,8 @@ void go_straight(float distance, bool brakee) { //millimeter
 		}
 		if(useIRSensor){
 			P = P_params[0] * Err;
-			a = right_sensor45;
-			b = left_sensor45;
 		} else {
-			P = 0; //P_params[1] * Err;
+			P = P_params[1] * Err;
 		}
 		P = max(-200, min(P, 200));
 		running_left_motor(0, speed + P);

@@ -28,21 +28,21 @@
 
 #define grid_size            10
 #define square_size         300
-#define turning_radius      56
-#define dbtWheels_r 		  106
+#define turning_radius      58
+#define dbtWheels_r 		  96
 #define dbtWheels_c		  38
 #define wheels_radius       29
 #define encoder_resolution 1232
 
-#define HasleftWallValue_45  320
-#define HasrightWallValue_45  320
+#define HasleftWallValue_45  350
+#define HasrightWallValue_45  350
 #define HasfrontWallValue  400
 
-#define HasleftWallValue_90  170
-#define HasrightWallValue_90  170
+#define HasleftWallValue_90  200
+#define HasrightWallValue_90  200
 
-#define leftWallValue 260
-#define rightWallValue 260
+#define leftWallValue 250
+#define rightWallValue 250
 
 #define n_vl53l0x 6
 

@@ -68,7 +68,7 @@ static void MX_USART3_UART_Init(void);
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
 const int32_t speed_levels[3] = {0, 350, 999 };
-float P_params[2] = {1, 5};
+float P_params[2] = {1.3, 5};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 volatile uint8_t current_speed;
@@ -198,8 +198,8 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(2000);
 			start_fill();
-
-
+			//uint8_t d;
+			//turn_right90(&d);
 			//findShortestPath();
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
