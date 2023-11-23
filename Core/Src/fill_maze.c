@@ -138,9 +138,8 @@ void start_fill() {
 				go_straight(WidthOESide, 0);
 			}
 		} else {
-			go_straight(WidthOESide, 1);
+			go_straight(dbtWheels_c, 1);
 			u_turnf(&direction);
-			go_straight(WidthOESide, 0);
 			if(stack[i][1] != -1 &&
 					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
 					((maze[stack[i][2]][stack[i][1]] & 4) != 0 || visited[stack[i][2]][stack[i][1] + 1]) &&

@@ -215,18 +215,18 @@ void go_straight(float distance, bool brakee) { //millimeter
 	#endif
 
 	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) == htim1.Init.Period){
-		__HAL_TIM_SET_COUNTER(&htim2, 0);
-		__HAL_TIM_SET_COUNTER(&htim3, 0);
 		uint16_t last = 2702;
 		while(last != TIM3->CNT){
 			last = TIM3->CNT;
-			HAL_Delay(100);
+			HAL_Delay(50);
 		}
+		__HAL_TIM_SET_COUNTER(&htim2, 0);
+		__HAL_TIM_SET_COUNTER(&htim3, 0);
 	}
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, en + 100);
-	__HAL_TIM_SET_COUNTER(&htim2, 100);
-	__HAL_TIM_SET_COUNTER(&htim3, 100);
+	__HAL_TIM_SET_COUNTER(&htim2, TIM2->CNT + 100);
+	__HAL_TIM_SET_COUNTER(&htim3, TIM3->CNT + 100);
 
 	status = straight;
 	int32_t Err, P, D, old_Error = 0;
@@ -235,6 +235,7 @@ void go_straight(float distance, bool brakee) { //millimeter
 	uint16_t oe2 = WidthOESide + 50;
 	uint16_t left_sensor45, right_sensor45, left_sensor90, right_sensor90, right_sensor0 = 8000;
 	uint16_t speed = speed_levels[Rmode];
+	int32_t ofs;
 	while(status != 0 && right_sensor0 > oe2){
 		vl53l0x_GetRanging_now(leftSensor90, &left_sensor90);
 		vl53l0x_GetRanging_now(leftSensor45, &left_sensor45);
@@ -258,9 +259,12 @@ void go_straight(float distance, bool brakee) { //millimeter
 			old_Error = Err;
 			useIRSensor = true;
 		} else {
+			if(useIRSensor){
+				ofs = TIM3->CNT - TIM2->CNT;
+			}
 			temp_1 = TIM2->CNT;
 			temp_2 = TIM3->CNT;
-			Err = temp_2 - temp_1;
+			Err = temp_2 - (temp_1 + ofs);
 			useIRSensor = false;
 			a = TIM2->CNT;
 			b = TIM3->CNT;
