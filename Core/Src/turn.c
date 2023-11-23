@@ -68,7 +68,7 @@ void u_turnf(uint8_t *direction) {
 		HAL_Delay(50);
 	}
 
-	uint16_t en = round(uturn_arc_en + uturn_arc_en*0.03);
+	uint16_t en = round(uturn_arc_en);
 	__HAL_TIM_SET_COUNTER(&htim2, en);
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
@@ -266,18 +266,19 @@ void go_straight(float distance, bool brakee) { //millimeter
 			temp_2 = TIM3->CNT;
 			Err = temp_2 - (temp_1 + ofs);
 			useIRSensor = false;
+			#if debug == 1
 			a = TIM2->CNT;
 			b = TIM3->CNT;
+			#endif
 		}
 		if(useIRSensor){
-			P = P_params[0] * Err;
+			P = P_params[0] * Err + D * 0.5;
 		} else {
 			P = P_params[1] * Err;
 		}
 		P = max(-200, min(P, 200));
 		running_left_motor(0, speed + P);
 		running_right_motor(0, speed - P);
-		//HAL_Delay(50);
 	}
 	if(brakee){
 		running_right_motor(1, 500);
