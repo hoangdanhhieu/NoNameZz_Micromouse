@@ -101,9 +101,9 @@ void sensor_init(){
 		pMyDevice[i]->I2cHandle = &hi2c1;
 		pVersion[i] = &Version[i];
 		HAL_GPIO_WritePin(GPIOA, ((uint16_t)0x0002) << i, GPIO_PIN_SET);
-		HAL_Delay(100);
+		HAL_Delay(10);
 		status_debug = vl53l0x_init(pMyDevice[i], pVersion[i], &DeviceInfo[i], addr);
-		HAL_Delay(100);
+		HAL_Delay(10);
 		addr+=2;
 		if(status_debug != VL53L0X_ERROR_NONE)
 			break;

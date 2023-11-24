@@ -78,18 +78,17 @@ void u_turnf(uint8_t *direction) {
 	uint16_t speed = 300;
 	int32_t P;
 	while(status != 0){
-		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) *2;
+		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
 		running_left_motor(1, speed + P);
 		running_right_motor(0, speed - P);
-		if(en - TIM3->CNT < 300){
-			speed = 300;
-		}
+		#if debug == 1
 		a = (int32_t)en - TIM2->CNT;
 		b = TIM3->CNT;
+		#endif
 	}
 	running_left_motor(0, 500);
 	running_right_motor(1, 500);
-	HAL_Delay(20);
+	HAL_Delay(30);
 	brake(2);
 }
 
