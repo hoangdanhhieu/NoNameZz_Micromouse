@@ -72,7 +72,7 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_COUNTER(&htim2, en);
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
-	__HAL_TIM_SET_AUTORELOAD(&htim3, en);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	status = u_turn;
 
 	uint16_t speed = 300;
@@ -231,7 +231,7 @@ void go_straight(float distance, bool brakee) { //millimeter
 	int32_t Err, P, D, old_Error = 0;
 	int32_t temp_1, temp_2;
 	bool useIRSensor = true;
-	uint16_t oe2 = WidthOESide + 50;
+	uint16_t oe2 = WidthOESide + 100;
 	uint16_t left_sensor45, right_sensor45, left_sensor90, right_sensor90, right_sensor0 = 8000;
 	uint16_t speed = speed_levels[Rmode];
 	int32_t ofs;
