@@ -75,7 +75,7 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	status = u_turn;
 
-	uint16_t speed = 300;
+	uint16_t speed = 400;
 	int32_t P;
 	while(status != 0){
 		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
@@ -158,7 +158,7 @@ void turn_left90(uint8_t *direction) {
 	status = turn_left_90;
 
 	while(status != 0){
-		running_right_motor(0, 300 + 200 * (float)TIM3->CNT/turn90_arc_en);
+		running_right_motor(0, 500 + 200 * (float)TIM3->CNT/turn90_arc_en);
 	}
 	running_right_motor(1, 500);
 	HAL_Delay(50);
@@ -197,7 +197,7 @@ void turn_right90(uint8_t *direction) {
 		a = TIM2->CNT;
 		b = TIM3->CNT;
 		#endif
-		running_left_motor(0, 300 + 200 * (float)TIM1->CNT/turn90_arc_en);
+		running_left_motor(0, 500 + 200 * (float)TIM2->CNT/turn90_arc_en);
 	}
 	running_left_motor(1, 500);
 	HAL_Delay(50);

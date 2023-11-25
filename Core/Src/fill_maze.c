@@ -38,9 +38,11 @@ void start_fill() {
 		vl53l0x_GetRanging_now(rightSensor0, &frontValue);
 		vl53l0x_GetRanging_now(leftSensor45, &leftValue);
 		vl53l0x_GetRanging_now(rightSensor45, &rightValue);
+		#if debug == 1
 		ts1 = frontValue;
 		ts2 = leftValue;
 		ts3 = rightValue;
+		#endif
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
@@ -138,7 +140,7 @@ void start_fill() {
 				go_straight(WidthOESide, 0);
 			}
 		} else {
-			go_straight(dbtWheels_c * 2, 1);
+			go_straight(dbtWheels_c * 1.8, 1);
 			u_turnf(&direction);
 			if(stack[i][1] != -1 &&
 					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
