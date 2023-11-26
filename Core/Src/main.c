@@ -199,7 +199,7 @@ int main(void)
 			HAL_Delay(2000);
 			start_fill();
 			//uint8_t d;
-			//go_straight(dbtWheels_c, 1);
+			//u_turnf(&d);
 			//findShortestPath();
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);

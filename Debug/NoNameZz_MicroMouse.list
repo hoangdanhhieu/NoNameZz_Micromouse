@@ -2139,7 +2139,7 @@ void start_fill() {
  80015a4:	2000041a 	.word	0x2000041a
  80015a8:	42cc0000 	.word	0x42cc0000
  80015ac:	420c0000 	.word	0x420c0000
-			go_straight(dbtWheels_c * 1.8, 1);
+			go_straight(dbtWheels_c + 20, 1);
  80015b0:	2101      	movs	r1, #1
  80015b2:	48b8      	ldr	r0, [pc, #736]	; (8001894 <start_fill+0xba0>)
  80015b4:	f002 fce0 	bl	8003f78 <go_straight>
@@ -2473,7 +2473,7 @@ void start_fill() {
 						break;
  8001890:	e026      	b.n	80018e0 <start_fill+0xbec>
  8001892:	bf00      	nop
- 8001894:	427c0000 	.word	0x427c0000
+ 8001894:	425c0000 	.word	0x425c0000
  8001898:	2000041a 	.word	0x2000041a
  800189c:	200002ec 	.word	0x200002ec
  80018a0:	20000590 	.word	0x20000590
@@ -5292,7 +5292,7 @@ int main(void)
 			start_fill();
  8003050:	f7fd fe50 	bl	8000cf4 <start_fill>
 			//uint8_t d;
-			//go_straight(dbtWheels_c, 1);
+			//u_turnf(&d);
 			//findShortestPath();
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
  8003054:	2006      	movs	r0, #6
@@ -7562,7 +7562,7 @@ void turn_left90(uint8_t *direction) {
 
 	while(status != 0){
  8003d20:	e01f      	b.n	8003d62 <turn_left90+0x106>
-		running_right_motor(0, 500 + 200 * (float)TIM3->CNT/turn90_arc_en);
+		running_right_motor(0, 400 + 200 * (float)TIM3->CNT/turn90_arc_en);
  8003d22:	4b1e      	ldr	r3, [pc, #120]	; (8003d9c <turn_left90+0x140>)
  8003d24:	6a5b      	ldr	r3, [r3, #36]	; 0x24
  8003d26:	4618      	mov	r0, r3
@@ -7628,7 +7628,7 @@ void turn_left90(uint8_t *direction) {
  8003da8:	449a0000 	.word	0x449a0000
  8003dac:	20000659 	.word	0x20000659
  8003db0:	43480000 	.word	0x43480000
- 8003db4:	43fa0000 	.word	0x43fa0000
+ 8003db4:	43c80000 	.word	0x43c80000
 
 08003db8 <turn_right90>:
 
@@ -7783,7 +7783,7 @@ void turn_right90(uint8_t *direction) {
 		a = TIM2->CNT;
 		b = TIM3->CNT;
 		#endif
-		running_left_motor(0, 500 + 200 * (float)TIM2->CNT/turn90_arc_en);
+		running_left_motor(0, 400 + 200 * (float)TIM2->CNT/turn90_arc_en);
  8003ede:	f04f 4380 	mov.w	r3, #1073741824	; 0x40000000
  8003ee2:	6a5b      	ldr	r3, [r3, #36]	; 0x24
  8003ee4:	4618      	mov	r0, r3
@@ -7849,7 +7849,7 @@ void turn_right90(uint8_t *direction) {
  8003f68:	449a0000 	.word	0x449a0000
  8003f6c:	20000659 	.word	0x20000659
  8003f70:	43480000 	.word	0x43480000
- 8003f74:	43fa0000 	.word	0x43fa0000
+ 8003f74:	43c80000 	.word	0x43c80000
 
 08003f78 <go_straight>:
 

@@ -158,7 +158,7 @@ void turn_left90(uint8_t *direction) {
 	status = turn_left_90;
 
 	while(status != 0){
-		running_right_motor(0, 500 + 200 * (float)TIM3->CNT/turn90_arc_en);
+		running_right_motor(0, 400 + 200 * (float)TIM3->CNT/turn90_arc_en);
 	}
 	running_right_motor(1, 500);
 	HAL_Delay(50);
@@ -197,7 +197,7 @@ void turn_right90(uint8_t *direction) {
 		a = TIM2->CNT;
 		b = TIM3->CNT;
 		#endif
-		running_left_motor(0, 500 + 200 * (float)TIM2->CNT/turn90_arc_en);
+		running_left_motor(0, 400 + 200 * (float)TIM2->CNT/turn90_arc_en);
 	}
 	running_left_motor(1, 500);
 	HAL_Delay(50);
