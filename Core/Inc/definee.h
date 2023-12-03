@@ -8,7 +8,7 @@
 #ifndef INC_DEFINEE_H_
 #define INC_DEFINEE_H_
 
-#define debug 0
+#define debug 1
 
 #define west       0
 #define east       1
@@ -33,16 +33,18 @@
 #define dbtWheels_c		  35
 #define wheels_radius       29
 #define encoder_resolution 1232
+#define turnRightOffset -50
+#define turnLeftOffset 10
 
-#define HasleftWallValue_45  320
-#define HasrightWallValue_45  320
+#define HasleftWallValue_45  350
+#define HasrightWallValue_45  350
 #define HasfrontWallValue  400
 
 #define HasleftWallValue_90  200
 #define HasrightWallValue_90  200
 
-#define leftWallValue 255
-#define rightWallValue 255
+#define leftWallValue 250
+#define rightWallValue 280
 
 #define n_vl53l0x 6
 

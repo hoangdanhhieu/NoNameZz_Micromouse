@@ -10,7 +10,12 @@
 #define right_wall 4
 #define top_wall 2
 #define bottom_wall 1
-
+#define turnLeftHere go_straight(WidthOESide + dbtWheels_c - turnLeftOffset, 1, 0); \
+						turn_left90(&direction); \
+						go_straight(WidthOESide - dbtWheels_c, 0, 2);
+#define turnRightHere go_straight(WidthOESide, 1, 1); \
+						turn_right90(&direction); \
+						go_straight(WidthOESide + turnRightOffset, 0, 2);
 
 
 int8_t stack[grid_size * grid_size][3];
@@ -33,20 +38,16 @@ void start_fill() {
 	maze[y - 1][x] |= bottom_wall;
 	direction = north;
 	bool frontfree, leftfree, rightfree;
-	uint16_t frontValue, leftValue, rightValue;
+	uint16_t frontValueleft, frontValueright, leftValue, rightValue;
 	while(1){
-		vl53l0x_GetRanging_now(rightSensor0, &frontValue);
+		vl53l0x_GetRanging_now(rightSensor0, &frontValueright);
+		vl53l0x_GetRanging_now(leftSensor0, &frontValueleft);
 		vl53l0x_GetRanging_now(leftSensor45, &leftValue);
 		vl53l0x_GetRanging_now(rightSensor45, &rightValue);
-		#if debug == 1
-		ts1 = frontValue;
-		ts2 = leftValue;
-		ts3 = rightValue;
-		#endif
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		frontfree = frontValue > HasfrontWallValue;
+		frontfree = (frontValueleft > HasfrontWallValue || frontValueright > HasfrontWallValue);
 		leftfree  = leftValue > HasleftWallValue_45;
 		rightfree = rightValue > HasrightWallValue_45;
 		set_wall(!leftfree, !rightfree, !frontfree);
@@ -85,32 +86,26 @@ void start_fill() {
 			if(direction == west){
 				if(rightfree){
 					stack[i][0] = turn_right_90;
-					go_straight(WidthOESide, 1);
-					turn_right90(&direction);
-					go_straight(WidthOESide, 0);
+					turnRightHere;
 				} else {
 					stack[i][0] = straight;
-					go_straight(square_size, 0);
+					go_straight(square_size, 0, 0);
 				}
 			} else if(direction == east){
 				if(leftfree){
 					stack[i][0] = turn_left_90;
-					go_straight(WidthOESide + dbtWheels_c, 1);
-					turn_left90(&direction);
-					go_straight(WidthOESide - dbtWheels_c, 0);
+					turnLeftHere;
 				} else {
 					stack[i][0] = straight;
-					go_straight(square_size, 0);
+					go_straight(square_size, 0, 0);
 				}
 			} else {
 				if(frontfree){
 					stack[i][0] = straight;
-					go_straight(square_size, 0);
+					go_straight(square_size, 0, 0);
 				} else {
 					stack[i][0] = turn_left_90;
-					go_straight(WidthOESide + dbtWheels_c, 1);
-					turn_left90(&direction);
-					go_straight(WidthOESide - dbtWheels_c, 0);
+					turnLeftHere;
 				}
 			}
 		} else if(leftfree || rightfree || frontfree){
@@ -123,24 +118,20 @@ void start_fill() {
 					stack[i][1] = -1;
 					stack[i][2] = 1;
 				}
-				go_straight(square_size, 0);
+				go_straight(square_size, 0, 0);
 			} else if(leftfree){
 				i++;
 				stack[i][0] = turn_left_90;
 				stack[i][1] = -1;
-				go_straight(WidthOESide + dbtWheels_c, 1);
-				turn_left90(&direction);
-				go_straight(WidthOESide - dbtWheels_c, 0);
+				turnLeftHere;
 			} else if(rightfree){
 				i++;
 				stack[i][0] = turn_right_90;
 				stack[i][1] = -1;
-				go_straight(WidthOESide, 1);
-				turn_right90(&direction);
-				go_straight(WidthOESide, 0);
+				turnRightHere;
 			}
 		} else {
-			go_straight(dbtWheels_c + 20, 1);
+			go_straight(dbtWheels_c + 20, 1, 0);
 			u_turnf(&direction);
 			if(stack[i][1] != -1 &&
 					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
@@ -153,17 +144,13 @@ void start_fill() {
 			while(stack[i][1] == -1){
 				switch(stack[i][0]){
 					case straight:
-						go_straight((float)stack[i][2] * square_size, 0);
+						go_straight((float)stack[i][2] * square_size, 0, 0);
 						break;
 					case turn_left_90:
-						go_straight(WidthOESide, 1);
-						turn_right90(&direction);
-						go_straight(WidthOESide, 0);
+						turnRightHere;
 						break;
 					case turn_right_90:
-						go_straight(WidthOESide + dbtWheels_c, 1);
-						turn_left90(&direction);
-						go_straight(WidthOESide - dbtWheels_c, 0);
+						turnLeftHere;
 						break;
 				}
 				i--;
@@ -183,88 +170,68 @@ void start_fill() {
 					if(stack[i][0] == straight){
 						if((maze[y][x] & top_wall) == 0 && !visited[y - 1][x]){
 							stack[i][0] = turn_left_90;
-							go_straight(WidthOESide, 1);
-							turn_right90(&direction);
-							go_straight(WidthOESide, 0);
+							turnRightHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_right_90;
-							go_straight(WidthOESide + dbtWheels_c, 1);
-							turn_left90(&direction);
-							go_straight(WidthOESide - dbtWheels_c, 0);
+							turnLeftHere;
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0);
+						go_straight(square_size, 0, 0);
 					}
 					break;
 				case east:
 					if(stack[i][0] == straight){
 						if(((maze[y][x] & top_wall) == 0) && !visited[y - 1][x]){
 							stack[i][0] = turn_right_90;
-							go_straight(WidthOESide + dbtWheels_c, 1);
-							turn_left90(&direction);
-							go_straight(WidthOESide - dbtWheels_c, 0);
+							turnLeftHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_left_90;
-							go_straight(WidthOESide, 1);
-							turn_right90(&direction);
-							go_straight(WidthOESide, 0);
+							turnRightHere;
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0);
+						go_straight(square_size, 0, 0);
 					}
 					break;
 				case north:
 					if(stack[i][0] == straight){
 						if((maze[y][x] & left_wall) == 0 && !visited[y][x - 1]){
 							stack[i][0] = turn_right_90;
-							go_straight(WidthOESide + dbtWheels_c, 1);
-							turn_left90(&direction);
-							go_straight(WidthOESide - dbtWheels_c, 0);
+							turnLeftHere;
 						} else if((maze[y][x] & right_wall) == 0 && !visited[y][x + 1]) {
 							stack[i][0] = turn_left_90;
-							go_straight(WidthOESide, 1);
-							turn_right90(&direction);
-							go_straight(WidthOESide, 0);
+							turnRightHere;
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0);
+						go_straight(square_size, 0, 0);
 					}
 					break;
 				case south:
 					if(stack[i][0] == straight){
 						if(((maze[y][x] & left_wall) == 0) && !visited[y][x - 1]){
 							stack[i][0] = turn_left_90;
-							go_straight(WidthOESide, 1);
-							turn_right90(&direction);
-							go_straight(WidthOESide, 0);
+							turnRightHere;
 						} else if(((maze[y][x] & right_wall) == 0) && !visited[y][x + 1]){
 							stack[i][0] = turn_right_90;
-							go_straight(WidthOESide + dbtWheels_c, 1);
-							turn_left90(&direction);
-							go_straight(WidthOESide - dbtWheels_c, 0);
+							turnLeftHere;
 						}
 					} else if(stack[i][0] == turn_left_90){
 						if(((maze[y][x] & right_wall) == 0) && !visited[y][x + 1]){
 							stack[i][0] = straight;
-							go_straight(WidthOESide + dbtWheels_c, 1);
-							turn_left90(&direction);
-							go_straight(WidthOESide - dbtWheels_c, 0);
+							turnLeftHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_right_90;
-							go_straight(square_size, 0);
+							go_straight(square_size, 0, 0);
 						}
 					} else {
 						if(((maze[y][x] & left_wall) == 0) && !visited[y][x - 1]){
 							stack[i][0] = straight;
-							go_straight(WidthOESide, 1);
-							turn_right90(&direction);
-							go_straight(WidthOESide, 0);
+							turnRightHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_left_90;
-							go_straight(square_size, 0);
+							go_straight(square_size, 0, 0);
 						}
 					}
 					break;
@@ -286,17 +253,13 @@ void start_fill() {
 void found(int16_t index){
 	switch(direction){
 		case west:
-			go_straight(WidthOESide, 1);
-			turn_right90(&direction);
-			go_straight(WidthOESide + square_size, 1);
+			turnRightHere;
 			break;
 		case east:
-			go_straight(WidthOESide + dbtWheels_c, 1);
-			turn_left90(&direction);
-			go_straight(WidthOESide + square_size - dbtWheels_c, 1);
+			turnLeftHere;
 			break;
 		case north:
-			go_straight(square_size * 2, 1);
+			go_straight(square_size * 2, 1, 0);
 			break;
 	}
 }

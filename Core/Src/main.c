@@ -48,7 +48,12 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-
+#define turnLeftHere go_straight(WidthOESide + dbtWheels_c - turnLeftOffset, 1, 0); \
+						turn_left90(&direction); \
+						go_straight(WidthOESide - dbtWheels_c + turnLeftOffset, 0, 2);
+#define turnRightHere go_straight(WidthOESide, 1, 1); \
+						turn_right90(&direction); \
+						go_straight(WidthOESide + turnRightOffset, 0, 2);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,7 +73,7 @@ static void MX_USART3_UART_Init(void);
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
 const int32_t speed_levels[3] = {0, 400, 999 };
-float P_params[2] = {1.3, 5};
+float P_params[2] = {1, 2};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 volatile uint8_t current_speed;
@@ -183,7 +188,6 @@ int main(void)
 			vl53l0x_GetRanging_now(pMyDevice[3], &ts4);
 			vl53l0x_GetRanging_now(pMyDevice[4], &ts5);
 			vl53l0x_GetRanging_now(pMyDevice[5], &ts6);
-			HAL_Delay(100);
 			d = HAL_GetTick();
 			sprintf((char*)uart_buffer, "%d\n", d - c);
 			HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
@@ -197,9 +201,15 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(2000);
-			start_fill();
-			//uint8_t d;
-			//u_turnf(&d);
+			//start_fill();
+
+			go_straight(square_size, 0, 2);
+			uint8_t direction;
+			turnLeftHere;
+			go_straight(square_size, 1, 2);
+
+
+
 			//findShortestPath();
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
