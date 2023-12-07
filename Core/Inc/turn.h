@@ -36,7 +36,7 @@ void turn_left45();
 void turn_right45();
 void turn_left90(uint8_t *direction);
 void turn_right90(uint8_t *direction);
-void go_straight(float distance, bool brakee, uint8_t next);
+void go_straight(float distance, bool brakee, int8_t next);
 void brake(uint8_t mode);
 
 #endif /* INC_TURN_H_ */

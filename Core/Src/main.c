@@ -48,12 +48,6 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-#define turnLeftHere go_straight(WidthOESide + dbtWheels_c - turnLeftOffset, 1, 0); \
-						turn_left90(&direction); \
-						go_straight(WidthOESide - dbtWheels_c + turnLeftOffset, 0, 2);
-#define turnRightHere go_straight(WidthOESide, 1, 1); \
-						turn_right90(&direction); \
-						go_straight(WidthOESide + turnRightOffset, 0, 2);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,10 +66,11 @@ static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
 const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
-const int32_t speed_levels[3] = {0, 400, 999 };
-float P_params[2] = {1, 2};
+const int32_t speed_levels[3] = {0, 350, 999 };
+float P_params[2] = {0.8, 2};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
+
 volatile uint8_t current_speed;
 volatile uint8_t Rmode;
 volatile int8_t status;
@@ -85,6 +80,7 @@ uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
 uint8_t uart_buffer[50];
 
 volatile int8_t status_debug;
+const int32_t offset_sensor[n_vl53l0x] = {0, -10000, 0, 0, 0, 0};
 VL53L0X_Dev_t MyDevice[n_vl53l0x];
 VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
 VL53L0X_Version_t Version[n_vl53l0x];
@@ -108,6 +104,7 @@ void sensor_init(){
 		HAL_GPIO_WritePin(GPIOA, ((uint16_t)0x0002) << i, GPIO_PIN_SET);
 		HAL_Delay(10);
 		status_debug = vl53l0x_init(pMyDevice[i], pVersion[i], &DeviceInfo[i], addr);
+		VL53L0X_SetOffsetCalibrationDataMicroMeter(pMyDevice[i], offset_sensor[i]);
 		HAL_Delay(10);
 		addr+=2;
 		if(status_debug != VL53L0X_ERROR_NONE)
@@ -201,12 +198,7 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(2000);
-			//start_fill();
-
-			go_straight(square_size, 0, 2);
-			uint8_t direction;
-			turnLeftHere;
-			go_straight(square_size, 1, 2);
+			start_fill();
 
 
 

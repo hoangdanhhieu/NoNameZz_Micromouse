@@ -86,7 +86,7 @@ void u_turnf(uint8_t *direction) {
 	}
 	running_left_motor(0, 500);
 	running_right_motor(1, 500);
-	HAL_Delay(30);
+	HAL_Delay(40);
 	brake(2);
 }
 
@@ -201,7 +201,7 @@ void turn_right90(uint8_t *direction) {
 
 }
 
-void go_straight(float distance, bool brakee, uint8_t next) { //millimeter
+void go_straight(float distance, bool brakee, int8_t next) { //millimeter
 	uint16_t en = round(distance * counts_per_1mm);
 	#if debug == 1
 		sprintf((char*)uart_buffer, "go_straight: %d | brake: %d\n", (int)distance, (int)brake);
@@ -222,8 +222,9 @@ void go_straight(float distance, bool brakee, uint8_t next) { //millimeter
 	int32_t Err, P, D, old_Error = 0;
 	int32_t temp_1, temp_2;
 	bool useIRSensor = true;
-	uint16_t oe2 = 0;// WidthOESide + 100;
-	uint16_t left_sensor45, right_sensor45,
+	uint16_t oe2 = 0; //10 + ((next == 0) ? 300 - (WidthOESide + dbtWheels_c - turnLeftOffset) :
+			//((next == 1) ? 300 - WidthOESide : 40));
+	uint16_t left_sensor45, right_sensor45, left_sensor90, right_sensor90,
 			left_sensor0   = 8000,
 			right_sensor0  = 8000;
 	uint16_t speed = speed_levels[Rmode];
@@ -233,8 +234,25 @@ void go_straight(float distance, bool brakee, uint8_t next) { //millimeter
 		vl53l0x_GetRanging_now(rightSensor45, &right_sensor45);
 		vl53l0x_GetRanging_now(leftSensor0,   &left_sensor0);
 		vl53l0x_GetRanging_now(rightSensor0,  &right_sensor0);
+		if(next == 0){
+			vl53l0x_GetRanging_now(leftSensor90,  &left_sensor90);
+			if(left_sensor90 < HasleftWallValue_90){
+				__HAL_TIM_SET_COUNTER(&htim2, 100);
+				__HAL_TIM_SET_COUNTER(&htim3, 100);
+			}
+			if(left_sensor45 < HasleftWallValue_45){ break; }
+		} else if(next == 1){
+			vl53l0x_GetRanging_now(rightSensor90,  &right_sensor90);
+			if(right_sensor90 < HasrightWallValue_90){
+				__HAL_TIM_SET_COUNTER(&htim2, 100);
+				__HAL_TIM_SET_COUNTER(&htim3, 100);
+			}
+			if(right_sensor45 < HasrightWallValue_45){ break; }
+		} else if(next == 2){
+
+		}
 		if(left_sensor45 < leftWallValue && right_sensor45 < rightWallValue){
-			Err = right_sensor45 - left_sensor45 - 30;
+			Err = right_sensor45 - left_sensor45;
 		} else if(left_sensor45 < leftWallValue && right_sensor45 > rightWallValue){
 			Err = (int32_t)leftWallValue - (int32_t)left_sensor45;
 			D = Err - old_Error;
@@ -259,11 +277,11 @@ void go_straight(float distance, bool brakee, uint8_t next) { //millimeter
 			#endif
 		}
 		if(useIRSensor){
-			P = P_params[0] * Err;// D * 0.1;
+			P = P_params[0] * Err + D * 0;
 		} else {
 			P = P_params[1] * Err;
 		}
-		P = max(-200, min(P, 200));
+		P = max(-50, min(P, 50));
 		running_left_motor(0, speed + P);
 		running_right_motor(0, speed - P);
 	}

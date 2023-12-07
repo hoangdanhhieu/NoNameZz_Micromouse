@@ -10,12 +10,12 @@
 #define right_wall 4
 #define top_wall 2
 #define bottom_wall 1
-#define turnLeftHere go_straight(WidthOESide + dbtWheels_c - turnLeftOffset, 1, 0); \
+#define turnLeftHere go_straight(WidthOESide + dbtWheels_c, 1, 0); \
 						turn_left90(&direction); \
 						go_straight(WidthOESide - dbtWheels_c, 0, 2);
 #define turnRightHere go_straight(WidthOESide, 1, 1); \
 						turn_right90(&direction); \
-						go_straight(WidthOESide + turnRightOffset, 0, 2);
+						go_straight(WidthOESide - 50, 0, 2);
 
 
 int8_t stack[grid_size * grid_size][3];
@@ -48,8 +48,8 @@ void start_fill() {
 		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 		frontfree = (frontValueleft > HasfrontWallValue || frontValueright > HasfrontWallValue);
-		leftfree  = leftValue > HasleftWallValue_45;
-		rightfree = rightValue > HasrightWallValue_45;
+		leftfree  = !(leftValue < HasleftWallValue_45);
+		rightfree = !(rightValue < HasrightWallValue_45);
 		set_wall(!leftfree, !rightfree, !frontfree);
 		visited[y][x] = true;
 		if(x == ending_coordinates[0] && y == ending_coordinates[1]){
@@ -89,7 +89,7 @@ void start_fill() {
 					turnRightHere;
 				} else {
 					stack[i][0] = straight;
-					go_straight(square_size, 0, 0);
+					go_straight(square_size, 0, -1);
 				}
 			} else if(direction == east){
 				if(leftfree){
@@ -97,12 +97,12 @@ void start_fill() {
 					turnLeftHere;
 				} else {
 					stack[i][0] = straight;
-					go_straight(square_size, 0, 0);
+					go_straight(square_size, 0, -1);
 				}
 			} else {
 				if(frontfree){
 					stack[i][0] = straight;
-					go_straight(square_size, 0, 0);
+					go_straight(square_size, 0, -1);
 				} else {
 					stack[i][0] = turn_left_90;
 					turnLeftHere;
@@ -118,7 +118,7 @@ void start_fill() {
 					stack[i][1] = -1;
 					stack[i][2] = 1;
 				}
-				go_straight(square_size, 0, 0);
+				go_straight(square_size, 0, -1);
 			} else if(leftfree){
 				i++;
 				stack[i][0] = turn_left_90;
@@ -131,7 +131,7 @@ void start_fill() {
 				turnRightHere;
 			}
 		} else {
-			go_straight(dbtWheels_c + 20, 1, 0);
+			go_straight(dbtWheels_c + 20, 1, -1);
 			u_turnf(&direction);
 			if(stack[i][1] != -1 &&
 					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
@@ -144,7 +144,7 @@ void start_fill() {
 			while(stack[i][1] == -1){
 				switch(stack[i][0]){
 					case straight:
-						go_straight((float)stack[i][2] * square_size, 0, 0);
+						go_straight((float)stack[i][2] * square_size, 0, -1);
 						break;
 					case turn_left_90:
 						turnRightHere;
@@ -177,7 +177,7 @@ void start_fill() {
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0, 0);
+						go_straight(square_size, 0, -1);
 					}
 					break;
 				case east:
@@ -191,7 +191,7 @@ void start_fill() {
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0, 0);
+						go_straight(square_size, 0, -1);
 					}
 					break;
 				case north:
@@ -205,7 +205,7 @@ void start_fill() {
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0, 0);
+						go_straight(square_size, 0, -1);
 					}
 					break;
 				case south:
@@ -223,7 +223,7 @@ void start_fill() {
 							turnLeftHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_right_90;
-							go_straight(square_size, 0, 0);
+							go_straight(square_size, 0, -1);
 						}
 					} else {
 						if(((maze[y][x] & left_wall) == 0) && !visited[y][x - 1]){
@@ -231,7 +231,7 @@ void start_fill() {
 							turnRightHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_left_90;
-							go_straight(square_size, 0, 0);
+							go_straight(square_size, 0, -1);
 						}
 					}
 					break;
@@ -259,7 +259,7 @@ void found(int16_t index){
 			turnLeftHere;
 			break;
 		case north:
-			go_straight(square_size * 2, 1, 0);
+			go_straight(square_size * 2, 1, -1);
 			break;
 	}
 }
