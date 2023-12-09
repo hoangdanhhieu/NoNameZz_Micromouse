@@ -31,18 +31,17 @@
 #define turning_radius      58
 #define dbtWheels_r 		  96
 #define dbtWheels_c		  35
-#define wheels_radius       29
+#define wheels_radius       30
 #define encoder_resolution 1232
 
 #define HasleftWallValue_45  300
 #define HasrightWallValue_45  300
-#define HasfrontWallValue  400
-
+#define HasfrontWallValue  350
 #define HasleftWallValue_90  150
 #define HasrightWallValue_90  150
 
-#define leftWallValue 200
-#define rightWallValue 200
+#define leftWallValue 210
+#define rightWallValue 210
 
 #define n_vl53l0x 6
 
