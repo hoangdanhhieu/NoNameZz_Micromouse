@@ -48,12 +48,13 @@
 
 
 
-const float wheels_arc = (float)wheels_radius * M_PI * 2;
-const float counts_per_1mm = (float)encoder_resolution / wheels_arc;
+const double wheels_arc = (double)wheels_radius * M_PI * 2;
+const double counts_per_1mm = (double)encoder_resolution / wheels_arc;
+const double counts_per_300mm = counts_per_1mm * 300;
 
-const float uturn_arc_en = (float)turning_radius * M_PI * 2 * (180.0/360) * counts_per_1mm;
-const float turn90_arc_en = (float)turning_radius * M_PI * 4 * (90.0/360) * counts_per_1mm;
-const float turn45_arc_en = (float)turning_radius * M_PI * 4 * (45.0/360) * counts_per_1mm;
+const double uturn_arc_en = (double)turning_radius * M_PI * 2 * (180.0/360) * counts_per_1mm;
+const double turn90_arc_en = (double)turning_radius * M_PI * 4 * (90.0/360) * counts_per_1mm;
+const double turn45_arc_en = (double)turning_radius * M_PI * 4 * (45.0/360) * counts_per_1mm;
 
 void u_turnf(uint8_t *direction) {
 	switch(*direction){
@@ -67,6 +68,13 @@ void u_turnf(uint8_t *direction) {
 	HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
 	#endif
 
+	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) != htim1.Init.Period ||
+			__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) != htim1.Init.Period){
+		running_right_motor(1, 650);
+		running_left_motor(1, 650);
+		HAL_Delay(50);
+		brake(2);
+	}
 	uint16_t last = 2702;
 	while(last != TIM3->CNT){
 		last = TIM3->CNT;
@@ -80,21 +88,27 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	status = u_turn;
 
-	uint16_t speed = 400;
+	uint16_t speed = 500;
 	int32_t P;
 	while(status != 0){
 		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
-		running_left_motor(1, speed + P);
-		running_right_motor(0, speed - P);
+		TIM1->CCR3 = speed - 100 + P;
+		TIM1->CCR4 = 0;
+		TIM1->CCR1 = speed - P;
+		TIM1->CCR2 = 0;
 		#if debug == 1
 		a = (int32_t)en - TIM2->CNT;
 		b = TIM3->CNT;
 		#endif
 	}
-	running_left_motor(0, 500);
-	running_right_motor(1, 500);
-	HAL_Delay(40);
+	running_left_motor(0, 600);
+	running_right_motor(1, 600);
+	HAL_Delay(50);
 	brake(2);
+	__HAL_TIM_SET_COUNTER(&htim2, 100);
+	__HAL_TIM_SET_COUNTER(&htim3, 100);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 }
 
 void turn_left45() {
@@ -110,7 +124,7 @@ void turn_left45() {
 	status = turn_left_45;
 
 	brake(0);
-	running_right_motor(0, speed_levels[Rmode]);
+	//running_right_motor(0, speed_levels[Rmode]);
 	while(status != 0);
 	brake(1);
 	__HAL_TIM_SET_COUNTER(&htim2, 0);
@@ -131,7 +145,7 @@ void turn_right45() {
 	status = turn_right_45;
 
 	brake(1);
-	running_left_motor(0, speed_levels[Rmode]);
+	//running_left_motor(0, speed_levels[Rmode]);
 	while(status != 0);
 	brake(0);
 	__HAL_TIM_SET_COUNTER(&htim2, 0);
@@ -145,29 +159,50 @@ void turn_left90(uint8_t *direction) {
 		case north: *direction = west;  break;
 		case south: *direction = east;  break;
 	}
-	#if debug == 1
-		sprintf((char*)uart_buffer, "turn_left90\n");
-		HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
-	#endif
-
-
-	running_left_motor(1, 100);
+	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) != htim1.Init.Period ||
+			__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) != htim1.Init.Period){
+		running_right_motor(1, 650);
+		running_left_motor(1, 650);
+		HAL_Delay(50);
+		brake(2);
+	}
+	uint16_t last = 10;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(20);
+	}
+	uint16_t en = round(turn90_arc_en)/2 + 450;
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
-	__HAL_TIM_SET_COUNTER(&htim3, TIM3->CNT + 500);
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	__HAL_TIM_SET_COUNTER(&htim3, 500);
+	__HAL_TIM_SET_COUNTER(&htim2, 10000);
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
-	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn90_arc_en) + 550);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, en);
 	status = turn_left_90;
-	running_right_motor(0, 500);
-	while(status != 0){
+	int32_t P;
+	uint16_t speed = 400;
 
+	TIM1->CCR3 = 150;
+	TIM1->CCR4 = 0;
+	TIM1->CCR1 = 150;
+	TIM1->CCR2 = 0;
+	HAL_Delay(100);
+
+	while(status != 0){
+		P = ((int32_t)(TIM3->CNT - 500) - (10000 - TIM2->CNT)) * 5;
+		TIM1->CCR3 = speed - 50 + P;
+		TIM1->CCR4 = 0;
+		TIM1->CCR1 = speed - P;
+		TIM1->CCR2 = 0;
 	}
+	running_left_motor(0, 500);
 	running_right_motor(1, 500);
-	HAL_Delay(40);
+	HAL_Delay(50);
 	brake(2);
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_COUNTER(&htim2, 100);
+	__HAL_TIM_SET_COUNTER(&htim3, 100);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 
 }
 
@@ -184,135 +219,157 @@ void turn_right90(uint8_t *direction) {
 	HAL_UART_Transmit(&huart3, uart_buffer, sizeof(uart_buffer), 10);
 	#endif
 
-	running_right_motor(1, 100);
-
+	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) != htim1.Init.Period ||
+		__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) != htim1.Init.Period){
+		running_right_motor(1, 650);
+		running_left_motor(1, 650);
+		HAL_Delay(50);
+		brake(2);
+	}
+	uint16_t last = 10;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(20);
+	}
+	uint16_t en = round(turn90_arc_en)/2 + 450;
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
-	__HAL_TIM_SET_COUNTER(&htim2, TIM2->CNT + 500);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
-	__HAL_TIM_SET_AUTORELOAD(&htim2, round(turn90_arc_en) + 400);
+	__HAL_TIM_SET_COUNTER(&htim2, 500);
+	__HAL_TIM_SET_COUNTER(&htim3, 10000);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, en);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	status = turn_right_90;
-	running_left_motor(0, 500);
+	uint16_t speed = 400;
+	int32_t P;
+
+	TIM1->CCR3 = 0;
+	TIM1->CCR4 = 150;
+	TIM1->CCR1 = 0;
+	TIM1->CCR2 = 150;
+	HAL_Delay(100);
+
 	while(status != 0){
+		P = ((int32_t)(10000 - TIM3->CNT) - ((int32_t)TIM2->CNT - 500)) * 5;
+		TIM1->CCR3 = 0;
+		TIM1->CCR4 = speed + P;
+		TIM1->CCR1 = 0;
+		TIM1->CCR2 = speed - P;
 		#if debug == 1
-		a = TIM2->CNT;
-		b = TIM3->CNT;
+		a = (TIM2->CNT - 500);
+		b = (10000 - TIM3->CNT);
 		#endif
 	}
 	running_left_motor(1, 500);
-	HAL_Delay(40);
+	running_right_motor(0, 500);
+	HAL_Delay(50);
 	brake(2);
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_COUNTER(&htim2, 100);
+	__HAL_TIM_SET_COUNTER(&htim3, 100);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 
 }
 
-void go_straight(float distance, bool brakee, int8_t next) { //millimeter
+void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 	uint16_t en = round(distance * counts_per_1mm);
-	#if debug == 1
-	sprintf((char*)uart_buffer, "go_straight: %d | brake: %d\n", (int)distance, (int)brake);
-	HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
-	#endif
-
-	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) == htim1.Init.Period &&
-			__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) == htim1.Init.Period){
+	bool isRunning = true;
+	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) == __HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2)){
+		uint16_t last = 10;
+		while(last != TIM2->CNT){
+			last = TIM2->CNT;
+			HAL_Delay(20);
+		}
 		set_counterTIM2_3(0, 0);
+		isRunning = false;
 	}
-	set_counterTIM2_3(TIM2->CNT + 100, TIM3->CNT + 100);
-	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, en + 100);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, en + 100);
+	set_counterTIM2_3(TIM2->CNT + 100, TIM3->CNT + 100);
 
 	status = straight;
 	int32_t Err, P, D, old_Error = 0;
-	int32_t temp_1, temp_2;
+	int32_t temp_1, temp_2, temp_3;
 	bool useIRSensor = true;
-	uint16_t oe2 = 0; //10 + ((next == 0) ? 300 - (WidthOESide + dbtWheels_c - turnLeftOffset) :
-			//((next == 1) ? 300 - WidthOESide : 40));
+	uint16_t oe2 = 0;
+	int32_t ofs;
+	uint16_t temp;
+	bool stopAtEdge = false;
 	uint16_t left_sensor45, right_sensor45, left_sensor90,
-		right_sensor90, left_sensor0, right_sensor0;
-	vl53l0x_GetRanging_now(leftSensor45,  &left_sensor45);
-	vl53l0x_GetRanging_now(rightSensor45, &right_sensor45);
-	vl53l0x_GetRanging_now(leftSensor0,   &left_sensor0);
-	vl53l0x_GetRanging_now(rightSensor0,  &right_sensor0);
+		right_sensor90, left_sensor0 = 8000, right_sensor0 = 8000;
 	vl53l0x_GetRanging_now(leftSensor90,  &left_sensor90);
 	vl53l0x_GetRanging_now(rightSensor90, &right_sensor90);
 	bool hasleftWalllast = left_sensor90 < HasleftWallValue_90;
 	bool hasrightWalllast = right_sensor90 < HasrightWallValue_90;
-	uint16_t speed = speed_levels[Rmode];
-	int32_t ofs;
-	uint16_t temp;
+	uint16_t speed0 = (next == -1) ? speed_levels[Rmode][0] : 350;
+	uint16_t speed1 = (next == -1) ? speed_levels[Rmode][1] : 350;
+
+	if(!isRunning){
+		TIM1->CCR3 = 0;
+		TIM1->CCR4 = 150;
+		TIM1->CCR1 = 150;
+		TIM1->CCR2 = 0;
+		HAL_Delay(100);
+	}
+
 	while(status != 0 && (right_sensor0 > oe2 || left_sensor0 > oe2)){
+		temp_3 = (int32_t)TIM3->CNT - TIM2->CNT;
 		vl53l0x_GetRanging_now(leftSensor45,  &left_sensor45);
 		vl53l0x_GetRanging_now(rightSensor45, &right_sensor45);
 		vl53l0x_GetRanging_now(leftSensor0,   &left_sensor0);
 		vl53l0x_GetRanging_now(rightSensor0,  &right_sensor0);
 		vl53l0x_GetRanging_now(leftSensor90,  &left_sensor90);
 		vl53l0x_GetRanging_now(rightSensor90,  &right_sensor90);
-		switch(next){
-			case -1:
-				if((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
+		if(next == -1 && ((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
 						(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast) ||
 						(left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
-						(right_sensor90 > HasrightWallValue_90 && hasrightWalllast)){
-					hasleftWalllast = left_sensor90 < HasleftWallValue_90;
-					hasrightWalllast = right_sensor90 < HasrightWallValue_90;
-					temp = min((float)round((float)(TIM3->CNT - 100)/(300*counts_per_1mm)) * 300 * counts_per_1mm, en - 1) + 100;
-					set_counterTIM2_3(temp, temp);
+						(right_sensor90 > HasrightWallValue_90 && hasrightWalllast))){
+			temp = round((double)round((double)(TIM3->CNT)/counts_per_300mm) * counts_per_300mm);
+			if((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
+					(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast)){
+				if(abs((int32_t)temp - en) < 50){
+						break;
 				}
-				break;
-			case 0:
-				if(left_sensor90 < HasleftWallValue_90){
-					set_counterTIM2_3(100, 100);
+				set_counterTIM2_3(temp + 100, temp + 100);
+			} else if((left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
+					(right_sensor90 > HasrightWallValue_90 && hasrightWalllast)){
+				if(abs((int32_t)temp - en) < 50){
+					stopAtEdge = true;
+					break;
 				}
-				if(left_sensor45 < HasleftWallValue_45){
+				temp += round(40 * counts_per_1mm);
+				set_counterTIM2_3(temp + 100, temp + 100);
 
-					set_counterTIM2_3(0, 0);
-					status = 0;
-				}
-				break;
-			case 1:
-				if(right_sensor90 < HasrightWallValue_90){
-					set_counterTIM2_3(100, 100);
-				}
-				if(right_sensor45 < HasrightWallValue_45){
-					set_counterTIM2_3(0, 0);
-					status = 0;
-				}
-				break;
-			case 2:
-				if(left_sensor90 < HasleftWallValue_90){
-					set_counterTIM2_3(0, 0);
-					status = 0;
-				}
-				break;
-			case 3:
-				if(right_sensor90 < HasrightWallValue_90){
-					set_counterTIM2_3(0, 0);
-					status = 0;
-				}
-				break;
+			}
+			hasleftWalllast = left_sensor90 < HasleftWallValue_90;
+			hasrightWalllast = right_sensor90 < HasrightWallValue_90;
 		}
-		if(left_sensor45 < HasleftWallValue_45 && left_sensor90 < HasleftWallValue_90
+		if(left_sensor0 > 150 && left_sensor45 < HasleftWallValue_45 && left_sensor90 < HasleftWallValue_90
 				&& right_sensor45 < HasrightWallValue_45 && right_sensor90 < HasrightWallValue_90){
-			Err = right_sensor45 - left_sensor45;
-		} else if(left_sensor45 < HasleftWallValue_45 && left_sensor90 < HasleftWallValue_90){
+			Err = (int32_t)right_sensor45 - left_sensor45;
+			D = Err - old_Error;
+			old_Error = Err;
+		} else if(left_sensor0 > 150 && left_sensor45 < HasleftWallValue_45 && (left_sensor90 < HasleftWallValue_90 ||
+				left_sensor45 < 230)){
 			Err = (int32_t)leftWallValue - left_sensor45;
 			D = Err - old_Error;
 			old_Error = Err;
 			useIRSensor = true;
-		} else if(right_sensor45 < HasrightWallValue_45 && right_sensor90 < HasrightWallValue_90){
+		} else if(left_sensor0 > 150 && right_sensor45 < HasrightWallValue_45 && (right_sensor90 < HasrightWallValue_90 ||
+				right_sensor45 < 230)){
 			Err = (int32_t)right_sensor45 - rightWallValue;
 			D = Err - old_Error;
 			old_Error = Err;
 			useIRSensor = true;
 		} else {
 			if(useIRSensor){
-				ofs = TIM3->CNT - TIM2->CNT;
+				ofs = temp_3;
+				old_Error = 0;
 			}
 			temp_1 = TIM2->CNT;
 			temp_2 = TIM3->CNT;
 			Err = temp_2 - (temp_1 + ofs);
+			D = Err - old_Error;
+			old_Error = Err;
 			useIRSensor = false;
 			#if debug == 1
 			a = TIM2->CNT;
@@ -320,43 +377,35 @@ void go_straight(float distance, bool brakee, int8_t next) { //millimeter
 			#endif
 		}
 		if(useIRSensor){
-			P = P_params[0] * Err + D * 0;
+			P = round(P_params[0] * Err + D * 0);
 		} else {
-			P = P_params[1] * Err;
+			P = round(P_params[1] * Err + D * 0);
 		}
-		P = max(-100, min(P, 100));
-		running_left_motor(0, speed + P);
-		running_right_motor(0, speed - P);
+		P = max(-50, min(P, 50));
+		TIM1->CCR3 = 0;
+		TIM1->CCR4 = (uint16_t)speed0 + P;
+		TIM1->CCR1 = (uint16_t)speed1 - P;
+		TIM1->CCR2 = 0;
 	}
-	/*
-	if((next == 0 || next == 1) && right_sensor0 < leftWallValue && abs((int)right_sensor0 - left_sensor0) > 30){
-		if(right_sensor0 > left_sensor0){
-			brake(0);
-			while((int)right_sensor0 - left_sensor0 > 10){
-				vl53l0x_GetRanging_now(leftSensor0,   &left_sensor0);
-				vl53l0x_GetRanging_now(rightSensor0,  &right_sensor0);
-			}
-		} else {
-			brake(1);
-			while((int)left_sensor0 - right_sensor0 > 10){
-				vl53l0x_GetRanging_now(leftSensor0,   &left_sensor0);
-				vl53l0x_GetRanging_now(rightSensor0,  &right_sensor0);
-			}
-		}
-	}
-	*/
 	if(brakee){
-		if(next == 0){
-			running_left_motor(1, 500);
-		} else if(next == 1){
-			running_right_motor(1, 500);
+		if(next == -1){
+			running_right_motor(1, 800);
+			running_left_motor(1, 800);
+			HAL_Delay(70);
+			brake(2);
 		} else {
-			running_right_motor(1, 500);
-			running_left_motor(1, 500);
+			running_right_motor(1, 600);
+			running_left_motor(1, 600);
+			HAL_Delay(50);
+			brake(2);
 		}
+	}
+	if(stopAtEdge){
+		__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+		__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+		set_counterTIM2_3(round(counts_per_1mm * 50), round(counts_per_1mm * 50));
+	} else {
 		set_counterTIM2_3(0, 0);
-		HAL_Delay(40);
-		brake(2);
 	}
 }
 

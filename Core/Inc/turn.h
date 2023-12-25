@@ -18,13 +18,13 @@
 
 
 
-extern float P_params[2];
+extern double P_params[2];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern volatile int8_t status;
 extern volatile uint8_t Rmode;
-extern const int32_t speed_levels[3];
+extern const int32_t speed_levels[3][2];
 extern int a, b, c, d, e;
 extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
 extern uint8_t uart_buffer[50];
@@ -36,7 +36,7 @@ void turn_left45();
 void turn_right45();
 void turn_left90(uint8_t *direction);
 void turn_right90(uint8_t *direction);
-void go_straight(float distance, bool brakee, int8_t next);
+void go_straight(double distance, bool brakee, int8_t next);
 void brake(uint8_t mode);
 
 #endif /* INC_TURN_H_ */

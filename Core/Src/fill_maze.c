@@ -10,13 +10,13 @@
 #define right_wall 4
 #define top_wall 2
 #define bottom_wall 1
-#define turnLeftHere go_straight(WidthOESide + dbtWheels_c + 20, 1, 0); \
+#define turnLeftHere go_straight(square_size/2, 1, 0); \
 						turn_left90(&direction); \
-						go_straight(WidthOESide - dbtWheels_c, 0, 2);
+						go_straight(square_size/2 + 20, 0, 2);
 
-#define turnRightHere go_straight(WidthOESide, 1, 1); \
+#define turnRightHere go_straight(square_size/2, 1, 1); \
 						turn_right90(&direction); \
-						go_straight(WidthOESide, 0, 3);
+						go_straight(square_size/2 + 20, 0, 3);
 
 
 int8_t stack[grid_size * grid_size][3];
@@ -26,6 +26,7 @@ static uint8_t direction;
 
 void found(int16_t index);
 void set_wall(bool rbl, bool rbr, bool rbf);
+
 
 void start_fill() {
 	memset(visited, false, sizeof(visited));
@@ -39,25 +40,23 @@ void start_fill() {
 	maze[y - 1][x] |= bottom_wall;
 	direction = north;
 	bool frontfree, leftfree, rightfree;
-	uint16_t frontValueleft, frontValueright, leftValue, rightValue;
+	uint16_t left_Sensor0, right_Sensor0,
+				left_Sensor45, right_Sensor45,
+				left_Sensor90, right_Sensor90;
 	while(1){
-		vl53l0x_GetRanging_now(rightSensor0, &frontValueright);
-		vl53l0x_GetRanging_now(leftSensor0, &frontValueleft);
-		vl53l0x_GetRanging_now(leftSensor45, &leftValue);
-		vl53l0x_GetRanging_now(rightSensor45, &rightValue);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		HAL_Delay(50);
+		vl53l0x_GetRanging_now(leftSensor0, &left_Sensor0);
+		vl53l0x_GetRanging_now(rightSensor0, &right_Sensor0);
+		vl53l0x_GetRanging_now(leftSensor45, &left_Sensor45);
+		vl53l0x_GetRanging_now(rightSensor45, &right_Sensor45);
+		vl53l0x_GetRanging_now(leftSensor90, &left_Sensor90);
+		vl53l0x_GetRanging_now(rightSensor90, &right_Sensor90);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		frontfree = (frontValueleft > HasfrontWallValue || frontValueright > HasfrontWallValue);
-		leftfree  = !(leftValue < HasleftWallValue_45);
-		rightfree = !(rightValue < HasrightWallValue_45);
+
+		frontfree = (left_Sensor0 > HasfrontWallValue || right_Sensor0 > HasfrontWallValue);
+		leftfree  = left_Sensor45 > HasleftWallValue_45;
+		rightfree = right_Sensor45 > HasrightWallValue_45;
 		set_wall(!leftfree, !rightfree, !frontfree);
-		visited[y][x] = true;
-		if(x == ending_coordinates[0] && y == ending_coordinates[1]){
-			found(i);
-			maze[y][x] |= top_wall;
-			break;
-		}
 		switch(direction){
 			case west:
 				frontfree = frontfree && !visited[y][x - 1];
@@ -80,6 +79,14 @@ void start_fill() {
 				rightfree  = rightfree && !visited[y][x - 1];
 				break;
 		}
+		visited[y][x] = true;
+		if(x == ending_coordinates[0] && y == ending_coordinates[1]){
+			//found(i);
+			maze[y][x] |= top_wall;
+			brake(2);
+			break;
+		}
+
 		if((leftfree && rightfree) || (leftfree && frontfree) || (rightfree && frontfree)){
 			i++;
 			stack[i][1] = x;
@@ -132,8 +139,9 @@ void start_fill() {
 				turnRightHere;
 			}
 		} else {
-			go_straight(dbtWheels_c + 20, 1, -2);
+			go_straight(170, 1, -2);
 			u_turnf(&direction);
+			go_straight(100, 0, -2);
 			if(stack[i][1] != -1 &&
 					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
 					((maze[stack[i][2]][stack[i][1]] & 4) != 0 || visited[stack[i][2]][stack[i][1] + 1]) &&
@@ -257,7 +265,8 @@ void found(int16_t index){
 			turnRightHere;
 			break;
 		case east:
-			turnLeftHere;
+			go_straight(square_size * 2, 1, -1);
+			//turnLeftHere;
 			break;
 		case north:
 			go_straight(square_size * 2, 1, -1);

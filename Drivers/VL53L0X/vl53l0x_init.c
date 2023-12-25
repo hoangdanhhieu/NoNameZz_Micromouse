@@ -53,28 +53,35 @@ VL53L0X_Error vl53l0x_init(VL53L0X_DEV pMyDevice, VL53L0X_Version_t *pVersion, V
     if(Status == VL53L0X_ERROR_NONE){
         Status = VL53L0X_SetDeviceMode(pMyDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING); // Setup in single ranging mode
     }
-    if(Status == VL53L0X_ERROR_NONE) {
-    	Status = VL53L0X_SetLimitCheckEnable(pMyDevice,
-            		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
-    }
-    if(Status == VL53L0X_ERROR_NONE) {
-        Status = VL53L0X_SetLimitCheckEnable(pMyDevice,
-            		VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
-    }
-
-    if(Status == VL53L0X_ERROR_NONE) {
-        Status = VL53L0X_SetLimitCheckValue(pMyDevice,
-        			VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
-            		(FixPoint1616_t)(0.25*65536));
-    }
-    if(Status == VL53L0X_ERROR_NONE) {
-    	Status = VL53L0X_SetLimitCheckValue(pMyDevice,
-            		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
-            		(FixPoint1616_t)(18*65536));
+    if (Status == VL53L0X_ERROR_NONE) {
+    	Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(pMyDevice, 33000);
     }
     if (Status == VL53L0X_ERROR_NONE) {
-    	Status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(pMyDevice, 90000);
+        Status = VL53L0X_SetLimitCheckEnable(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
     }
+    if (Status == VL53L0X_ERROR_NONE) {
+        Status = VL53L0X_SetLimitCheckEnable(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
+    }
+
+    if (Status == VL53L0X_ERROR_NONE) {
+        Status = VL53L0X_SetLimitCheckValue(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+        		(FixPoint1616_t)(0.25*65536));
+	}
+    if (Status == VL53L0X_ERROR_NONE) {
+        Status = VL53L0X_SetLimitCheckValue(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+        		(FixPoint1616_t)(18*65536));
+    }
+    if (Status == VL53L0X_ERROR_NONE) {
+          //Status = VL53L0X_SetLimitCheckEnable(pMyDevice, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
+        }
+    if (Status == VL53L0X_ERROR_NONE) {
+        //  Status = VL53L0X_SetLimitCheckValue(pMyDevice,
+        		 // VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 25000); // default 16384
+        }
     HAL_Delay(10);
     if(Status == VL53L0X_ERROR_NONE){
     	Status = VL53L0X_StartMeasurement(pMyDevice);
@@ -89,9 +96,13 @@ VL53L0X_Error vl53l0x_GetRanging_now(VL53L0X_DEV pMyDevice, uint16_t *result) {
 	Status = WaitMeasurementDataReady(pMyDevice);
 	if(Status == VL53L0X_ERROR_NONE){
 		Status = VL53L0X_GetRangingMeasurementData(pMyDevice, pRangingMeasurementData);
-	    *result = pRangingMeasurementData->RangeMilliMeter;
 		VL53L0X_ClearInterruptMask(pMyDevice, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-	    VL53L0X_PollingDelay(pMyDevice);
+		VL53L0X_PollingDelay(pMyDevice);
+		if(pRangingMeasurementData->RangeStatus == 0){
+			*result = pRangingMeasurementData->RangeMilliMeter;
+		} else {
+			*result = 8000;
+		}
 	}
 	return Status;
 }
