@@ -48,6 +48,34 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+
+#define running_left_motor(mode, speed){\
+	if(mode == 0){ \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0); \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, speed); \
+	} else { \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, speed); \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0); \
+	} \
+}
+
+#define running_right_motor(mode, speed) \
+	if(mode == 0){ \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, speed); \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0); \
+	} else { \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0); \
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, speed); \
+	\
+}
+#define turnLeftHere go_straight(square_size/2 + 40, 1, 0); \
+						turn_left90(&direction); \
+						go_straight(square_size/2 - 40, 1, 2);
+
+#define turnRightHere go_straight(square_size/2 + 10, 1, 1); \
+						turn_right90(&direction); \
+						go_straight(square_size/2 - 30, 0, 3);
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,10 +92,10 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-const uint8_t starting_coordinates[2] = { 5, 9 }; //{x, y}
-const uint8_t ending_coordinates[2] = { 4, 0 }; //{x, y}
-const int32_t speed_levels[3] = {0, 350, 999 };
-float P_params[2] = {1, 5};
+const uint8_t starting_coordinates[2] = { 0, 9 }; //{5, 9}
+const uint8_t ending_coordinates[2] = { 9, 9 }; //{4, 0}
+const int32_t speed_levels[3][2] = {{0, 0}, {550, 600}, {999, 999}};
+double P_params[2] = {1, 5};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 
@@ -78,6 +106,7 @@ int a, b, c, d, e;
 int t1, t2, t3, t4;
 uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
 uint8_t uart_buffer[50];
+uint32_t aaaa;
 
 volatile int8_t status_debug;
 const int32_t offset_sensor[n_vl53l0x] = {0, -10000, 0, 0, 0, 0};
@@ -190,6 +219,7 @@ int main(void)
 			HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
 			a = TIM2->CNT;
 			b = TIM3->CNT;
+		//	VL53L0X_GetLimitCheckValue(pMyDevice[0], VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, &aaaa);
 		#endif
     /* USER CODE END WHILE */
 
@@ -199,11 +229,17 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(2000);
 
-			//start_fill();
-
-
-
+			start_fill();
 			//findShortestPath();
+			//uint8_t direction;
+			//go_straight(300, 0, -1);
+			//turnLeftHere;
+			//turnLeftHere;
+			//go_straight(300, 1, -1);
+			//turnLeftHere;
+			//turnLeftHere;
+			//go_straight(300, 1, -1);
+
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 			Rmode = 0;
@@ -317,7 +353,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 99;
+  htim1.Init.Prescaler = 399;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 999;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

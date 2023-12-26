@@ -36,7 +36,7 @@
 
 #define HasleftWallValue_45  300
 #define HasrightWallValue_45  300
-#define HasfrontWallValue  350
+#define HasfrontWallValue  400
 #define HasleftWallValue_90  130
 #define HasrightWallValue_90  130
 

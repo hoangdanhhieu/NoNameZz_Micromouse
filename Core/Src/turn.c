@@ -82,14 +82,21 @@ void u_turnf(uint8_t *direction) {
 	}
 
 	uint16_t en = round(uturn_arc_en);
-	__HAL_TIM_SET_COUNTER(&htim2, en);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+	__HAL_TIM_SET_COUNTER(&htim2, en);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = u_turn;
 
 	uint16_t speed = 500;
 	int32_t P;
+
+	TIM1->CCR3 = 150;
+	TIM1->CCR4 = 0;
+	TIM1->CCR1 = 150;
+	TIM1->CCR2 = 0;
+	HAL_Delay(100);
+
 	while(status != 0){
 		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
 		TIM1->CCR3 = speed - 100 + P;
@@ -171,7 +178,7 @@ void turn_left90(uint8_t *direction) {
 		last = TIM2->CNT;
 		HAL_Delay(20);
 	}
-	uint16_t en = round(turn90_arc_en)/2 + 450;
+	uint16_t en = round(turn90_arc_en)/2 + 530;
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	__HAL_TIM_SET_COUNTER(&htim3, 500);
@@ -293,7 +300,6 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 	uint16_t oe2 = 0;
 	int32_t ofs;
 	uint16_t temp;
-	bool stopAtEdge = false;
 	uint16_t left_sensor45, right_sensor45, left_sensor90,
 		right_sensor90, left_sensor0 = 8000, right_sensor0 = 8000;
 	vl53l0x_GetRanging_now(leftSensor90,  &left_sensor90);
@@ -327,13 +333,18 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 			if((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
 					(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast)){
 				if(abs((int32_t)temp - en) < 50){
+						__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+						__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+						set_counterTIM2_3(0, 0);
 						break;
 				}
 				set_counterTIM2_3(temp + 100, temp + 100);
 			} else if((left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
 					(right_sensor90 > HasrightWallValue_90 && hasrightWalllast)){
 				if(abs((int32_t)temp - en) < 50){
-					stopAtEdge = true;
+					__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+					__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+					set_counterTIM2_3(round(40 * counts_per_1mm), round(40 * counts_per_1mm));
 					break;
 				}
 				temp += round(40 * counts_per_1mm);
@@ -343,18 +354,18 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 			hasleftWalllast = left_sensor90 < HasleftWallValue_90;
 			hasrightWalllast = right_sensor90 < HasrightWallValue_90;
 		}
-		if(left_sensor0 > 150 && left_sensor45 < HasleftWallValue_45 && left_sensor90 < HasleftWallValue_90
-				&& right_sensor45 < HasrightWallValue_45 && right_sensor90 < HasrightWallValue_90){
+		if(left_sensor0 > 150 && left_sensor45 < 350 && left_sensor90 < HasleftWallValue_90
+				&& right_sensor45 < 350 && right_sensor90 < HasrightWallValue_90){
 			Err = (int32_t)right_sensor45 - left_sensor45;
 			D = Err - old_Error;
 			old_Error = Err;
-		} else if(left_sensor0 > 150 && left_sensor45 < HasleftWallValue_45 && (left_sensor90 < HasleftWallValue_90 ||
+		} else if(left_sensor0 > 150 && left_sensor45 < 350 && (left_sensor90 < HasleftWallValue_90 ||
 				left_sensor45 < 230)){
 			Err = (int32_t)leftWallValue - left_sensor45;
 			D = Err - old_Error;
 			old_Error = Err;
 			useIRSensor = true;
-		} else if(left_sensor0 > 150 && right_sensor45 < HasrightWallValue_45 && (right_sensor90 < HasrightWallValue_90 ||
+		} else if(left_sensor0 > 150 && right_sensor45 < 350 && (right_sensor90 < HasrightWallValue_90 ||
 				right_sensor45 < 230)){
 			Err = (int32_t)right_sensor45 - rightWallValue;
 			D = Err - old_Error;
@@ -390,22 +401,15 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 	if(brakee){
 		if(next == -1){
 			running_right_motor(1, 800);
-			running_left_motor(1, 800);
+			running_left_motor(1, 880);
 			HAL_Delay(70);
 			brake(2);
 		} else {
 			running_right_motor(1, 600);
-			running_left_motor(1, 600);
+			running_left_motor(1, 660);
 			HAL_Delay(50);
 			brake(2);
 		}
-	}
-	if(stopAtEdge){
-		__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
-		__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
-		set_counterTIM2_3(round(counts_per_1mm * 50), round(counts_per_1mm * 50));
-	} else {
-		set_counterTIM2_3(0, 0);
 	}
 }
 

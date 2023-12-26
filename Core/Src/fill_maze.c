@@ -10,13 +10,13 @@
 #define right_wall 4
 #define top_wall 2
 #define bottom_wall 1
-#define turnLeftHere go_straight(square_size/2, 1, 0); \
+#define turnLeftHere go_straight(square_size/2 + 40, 1, 0); \
 						turn_left90(&direction); \
-						go_straight(square_size/2 + 20, 0, 2);
+						go_straight(square_size/2 - 40, 0, 2);
 
-#define turnRightHere go_straight(square_size/2, 1, 1); \
+#define turnRightHere go_straight(square_size/2 + 10, 1, 1); \
 						turn_right90(&direction); \
-						go_straight(square_size/2 + 20, 0, 3);
+						go_straight(square_size/2 - 30, 0, 3);
 
 
 int8_t stack[grid_size * grid_size][3];
@@ -153,7 +153,7 @@ void start_fill() {
 			while(stack[i][1] == -1){
 				switch(stack[i][0]){
 					case straight:
-						go_straight((float)stack[i][2] * square_size, 0, -2);
+						go_straight((float)stack[i][2] * square_size, 0, -1);
 						break;
 					case turn_left_90:
 						turnRightHere;
@@ -186,7 +186,7 @@ void start_fill() {
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0, -2);
+						go_straight(square_size, 0, -1);
 					}
 					break;
 				case east:
@@ -200,7 +200,7 @@ void start_fill() {
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0, -2);
+						go_straight(square_size, 0, -1);
 					}
 					break;
 				case north:
@@ -232,7 +232,7 @@ void start_fill() {
 							turnLeftHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_right_90;
-							go_straight(square_size, 0, -2);
+							go_straight(square_size, 0, -1);
 						}
 					} else {
 						if(((maze[y][x] & left_wall) == 0) && !visited[y][x - 1]){
@@ -240,7 +240,7 @@ void start_fill() {
 							turnRightHere;
 						} else if(((maze[y][x] & bottom_wall) == 0) && !visited[y + 1][x]){
 							stack[i][0] = turn_left_90;
-							go_straight(square_size, 0, -2);
+							go_straight(square_size, 0, -1);
 						}
 					}
 					break;
