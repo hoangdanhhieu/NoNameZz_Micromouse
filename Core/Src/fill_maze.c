@@ -12,11 +12,11 @@
 #define bottom_wall 1
 #define turnLeftHere go_straight(square_size/2 + 40, 1, 0); \
 						turn_left90(&direction); \
-						go_straight(square_size/2 - 40, 0, 2);
+						go_straight(square_size/2 - 40, 0, 0);
 
-#define turnRightHere go_straight(square_size/2 + 10, 1, 1); \
+#define turnRightHere go_straight(square_size/2 + 10, 1, 0); \
 						turn_right90(&direction); \
-						go_straight(square_size/2 - 30, 0, 3);
+						go_straight(square_size/2 - 30, 0, 0);
 
 
 int8_t stack[grid_size * grid_size][3];
@@ -81,9 +81,16 @@ void start_fill() {
 		}
 		visited[y][x] = true;
 		if(x == ending_coordinates[0] && y == ending_coordinates[1]){
-			//found(i);
+			found(i);
 			maze[y][x] |= top_wall;
+			found_path = 1;
 			brake(2);
+			for(int i = 0; i < 25; i++){
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+				HAL_Delay(100);
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+				HAL_Delay(100);
+			}
 			break;
 		}
 
@@ -214,7 +221,7 @@ void start_fill() {
 						}
 					} else {
 						stack[i][0] = (stack[i][0] == turn_left_90) ? turn_right_90 : turn_left_90;
-						go_straight(square_size, 0, -2);
+						go_straight(square_size, 0, -1);
 					}
 					break;
 				case south:
@@ -265,8 +272,7 @@ void found(int16_t index){
 			turnRightHere;
 			break;
 		case east:
-			go_straight(square_size * 2, 1, -1);
-			//turnLeftHere;
+			turnLeftHere;
 			break;
 		case north:
 			go_straight(square_size * 2, 1, -1);

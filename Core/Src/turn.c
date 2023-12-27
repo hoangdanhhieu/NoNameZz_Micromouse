@@ -53,8 +53,8 @@ const double counts_per_1mm = (double)encoder_resolution / wheels_arc;
 const double counts_per_300mm = counts_per_1mm * 300;
 
 const double uturn_arc_en = (double)turning_radius * M_PI * 2 * (180.0/360) * counts_per_1mm;
-const double turn90_arc_en = (double)turning_radius * M_PI * 4 * (90.0/360) * counts_per_1mm;
-const double turn45_arc_en = (double)turning_radius * M_PI * 4 * (45.0/360) * counts_per_1mm;
+const double turn90_arc_en = (double)turning_radius * M_PI * 2 * (90.0/360) * counts_per_1mm;
+const double turn45_arc_en = (double)turning_radius * M_PI * 2 * (45.0/360) * counts_per_1mm;
 
 void u_turnf(uint8_t *direction) {
 	switch(*direction){
@@ -118,53 +118,16 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 }
 
-void turn_left45() {
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
-	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
-	__HAL_TIM_SET_AUTORELOAD(&htim3, round(turn45_arc_en));
-
-	#if debug == 1
-		sprintf((char*)uart_buffer, "turn_left45\n");
-		HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
-	#endif
-	status = turn_left_45;
-
-	brake(0);
-	//running_right_motor(0, speed_levels[Rmode]);
-	while(status != 0);
-	brake(1);
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
-}
-
-void turn_right45() {
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
-	__HAL_TIM_SET_AUTORELOAD(&htim2, round(turn45_arc_en));
-	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
-
-
-	#if debug == 1
-		sprintf((char*)uart_buffer, "turn_right45\n");
-		HAL_UART_Transmit(&huart3, uart_buffer, sizeof (uart_buffer), 10);
-	#endif
-	status = turn_right_45;
-
-	brake(1);
-	//running_left_motor(0, speed_levels[Rmode]);
-	while(status != 0);
-	brake(0);
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
-}
-
-void turn_left90(uint8_t *direction) {
+void turn_left45(uint8_t *direction) {
 	switch(*direction){
-		case west:  *direction = south; break;
-		case east:  *direction = north; break;
-		case north: *direction = west;  break;
-		case south: *direction = east;  break;
+		case west:  *direction = south_west; break;
+		case east:  *direction = north_east; break;
+		case north: *direction = north_west;  break;
+		case south: *direction = south_east;  break;
+		case north_west: *direction = west;  break;
+		case north_east: *direction = north;  break;
+		case south_west: *direction = south;  break;
+		case south_east: *direction = east;  break;
 	}
 	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) != htim1.Init.Period ||
 			__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) != htim1.Init.Period){
@@ -178,7 +141,126 @@ void turn_left90(uint8_t *direction) {
 		last = TIM2->CNT;
 		HAL_Delay(20);
 	}
-	uint16_t en = round(turn90_arc_en)/2 + 530;
+	uint16_t en = round(turn45_arc_en) + 500;
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+	__HAL_TIM_SET_COUNTER(&htim3, 500);
+	__HAL_TIM_SET_COUNTER(&htim2, 10000);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, en);
+	status = turn_left_45;
+	int32_t P;
+	uint16_t speed = 400;
+
+	TIM1->CCR3 = 150;
+	TIM1->CCR4 = 0;
+	TIM1->CCR1 = 150;
+	TIM1->CCR2 = 0;
+	HAL_Delay(100);
+
+	while(status != 0){
+		P = ((int32_t)(TIM3->CNT - 500) - (10000 - TIM2->CNT)) * 5;
+		TIM1->CCR3 = speed - 50 + P;
+		TIM1->CCR4 = 0;
+		TIM1->CCR1 = speed - P;
+		TIM1->CCR2 = 0;
+	}
+	running_left_motor(0, 500);
+	running_right_motor(1, 500);
+	HAL_Delay(50);
+	brake(2);
+	__HAL_TIM_SET_COUNTER(&htim2, 100);
+	__HAL_TIM_SET_COUNTER(&htim3, 100);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+}
+
+void turn_right45(uint8_t *direction) {
+	switch(*direction){
+		case west:  *direction = north_west; break;
+		case east:  *direction = south_east; break;
+		case north: *direction = north_east;  break;
+		case south: *direction = south_west;  break;
+		case north_west: *direction = north;  break;
+		case north_east: *direction = east;  break;
+		case south_west: *direction = west;  break;
+		case south_east: *direction = south;  break;
+	}
+
+	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) != htim1.Init.Period ||
+		__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) != htim1.Init.Period){
+		running_right_motor(1, 650);
+		running_left_motor(1, 650);
+		HAL_Delay(50);
+		brake(2);
+	}
+	uint16_t last = 10;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(20);
+	}
+	uint16_t en = round(turn45_arc_en) + 450;
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+	__HAL_TIM_SET_COUNTER(&htim2, 500);
+	__HAL_TIM_SET_COUNTER(&htim3, 10000);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, en);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+	status = turn_right_45;
+	uint16_t speed = 400;
+	int32_t P;
+
+	TIM1->CCR3 = 0;
+	TIM1->CCR4 = 150;
+	TIM1->CCR1 = 0;
+	TIM1->CCR2 = 150;
+	HAL_Delay(100);
+
+	while(status != 0){
+		P = ((int32_t)(10000 - TIM3->CNT) - ((int32_t)TIM2->CNT - 500)) * 5;
+		TIM1->CCR3 = 0;
+		TIM1->CCR4 = speed + P;
+		TIM1->CCR1 = 0;
+		TIM1->CCR2 = speed - P;
+		#if debug == 1
+		a = (TIM2->CNT - 500);
+		b = (10000 - TIM3->CNT);
+		#endif
+	}
+	running_left_motor(1, 500);
+	running_right_motor(0, 500);
+	HAL_Delay(50);
+	brake(2);
+	__HAL_TIM_SET_COUNTER(&htim2, 100);
+	__HAL_TIM_SET_COUNTER(&htim3, 100);
+	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+}
+
+void turn_left90(uint8_t *direction) {
+	switch(*direction){
+		case west:  *direction = south; break;
+		case east:  *direction = north; break;
+		case north: *direction = west;  break;
+		case south: *direction = east;  break;
+		case north_west: *direction = south_west;  break;
+		case north_east: *direction = north_west;  break;
+		case south_west: *direction = south_east;  break;
+		case south_east: *direction = north_east;  break;
+	}
+	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) != htim1.Init.Period ||
+			__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) != htim1.Init.Period){
+		running_right_motor(1, 650);
+		running_left_motor(1, 650);
+		HAL_Delay(50);
+		brake(2);
+	}
+	uint16_t last = 10;
+	while(last != TIM2->CNT){
+		last = TIM2->CNT;
+		HAL_Delay(20);
+	}
+	uint16_t en = round(turn90_arc_en) + 530;
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	__HAL_TIM_SET_COUNTER(&htim3, 500);
@@ -219,6 +301,10 @@ void turn_right90(uint8_t *direction) {
 		case east:  *direction = south; break;
 		case north: *direction = east;  break;
 		case south: *direction = west;  break;
+		case north_west: *direction = north_east;  break;
+		case north_east: *direction = south_east;  break;
+		case south_west: *direction = north_west;  break;
+		case south_east: *direction = south_west;  break;
 	}
 
 	#if debug == 1
@@ -238,7 +324,7 @@ void turn_right90(uint8_t *direction) {
 		last = TIM2->CNT;
 		HAL_Delay(20);
 	}
-	uint16_t en = round(turn90_arc_en)/2 + 450;
+	uint16_t en = round(turn90_arc_en) + 450;
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 	__HAL_TIM_SET_COUNTER(&htim2, 500);

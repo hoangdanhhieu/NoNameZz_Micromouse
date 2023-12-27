@@ -32,8 +32,8 @@ extern UART_HandleTypeDef huart3;
 
 //void balance();
 void u_turnf(uint8_t *direction);
-void turn_left45();
-void turn_right45();
+void turn_left45(uint8_t *direction);
+void turn_right45(uint8_t *direction);
 void turn_left90(uint8_t *direction);
 void turn_right90(uint8_t *direction);
 void go_straight(double distance, bool brakee, int8_t next);

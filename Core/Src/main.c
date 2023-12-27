@@ -48,7 +48,7 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-
+/*
 #define running_left_motor(mode, speed){\
 	if(mode == 0){ \
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0); \
@@ -75,6 +75,7 @@ UART_HandleTypeDef huart3;
 #define turnRightHere go_straight(square_size/2 + 10, 1, 1); \
 						turn_right90(&direction); \
 						go_straight(square_size/2 - 30, 0, 3);
+*/
 
 /* USER CODE END PV */
 
@@ -102,6 +103,7 @@ bool visited[grid_size][grid_size];
 volatile uint8_t current_speed;
 volatile uint8_t Rmode;
 volatile int8_t status;
+uint8_t found_path;
 int a, b, c, d, e;
 int t1, t2, t3, t4;
 uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
@@ -227,18 +229,16 @@ int main(void)
 		if (Rmode == 1) {
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
-			HAL_Delay(2000);
+			HAL_Delay(1000);
 
+			found_path = 0;
+			go_straight(300, 1, -1);
 			start_fill();
-			//findShortestPath();
-			//uint8_t direction;
-			//go_straight(300, 0, -1);
-			//turnLeftHere;
-			//turnLeftHere;
-			//go_straight(300, 1, -1);
-			//turnLeftHere;
-			//turnLeftHere;
-			//go_straight(300, 1, -1);
+			if(found_path == 1){
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+				findShortestPath();
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+			}
 
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
@@ -247,14 +247,31 @@ int main(void)
 		if (Rmode == 2) {
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+			HAL_Delay(1000);
+			uint8_t direction = north;
+			for(int i = 0; i <= path_index; i++){
+				switch((int32_t)round(shortestPath[i])){
+					case turn_left_45:
+						turn_left45(&direction);
+						break;
+					case turn_right_45:
+						turn_right45(&direction);
+						break;
+					case turn_left_90:
+						turn_left90(&direction);
+						break;
+					case turn_right_90:
+						turn_right90(&direction);
+						break;
+					default:
+						go_straight(shortestPath[i], 1, 0);
+				}
+			}
 
-			HAL_Delay(500);
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 			Rmode = 0;
 		}
-		//a = TIM1->CNT;
-		//b = TIM3->CNT;
 	}
   /* USER CODE END 3 */
 }

@@ -55,6 +55,7 @@ extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
 extern uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
 extern int a, b, c, d, e;
 extern UART_HandleTypeDef huart3;
+extern uint8_t found_path;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

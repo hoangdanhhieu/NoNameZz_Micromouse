@@ -6,7 +6,7 @@
 
 #include "definee.h"
 
-extern float shortestPath[grid_size * grid_size * 4];
+extern double shortestPath[grid_size * grid_size * 4];
 extern uint16_t path_index;
 extern uint8_t maze[grid_size][grid_size];
 extern const uint8_t starting_coordinates[2];
