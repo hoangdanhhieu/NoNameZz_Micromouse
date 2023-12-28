@@ -47,14 +47,23 @@
 		__HAL_TIM_SET_COUNTER(&htim3, value3);
 
 
-
-const double wheels_arc = (double)wheels_radius * M_PI * 2;
-const double counts_per_1mm = (double)encoder_resolution / wheels_arc;
-const double counts_per_300mm = counts_per_1mm * 300;
-
 const double uturn_arc_en = (double)turning_radius * M_PI * 2 * (180.0/360) * counts_per_1mm;
 const double turn90_arc_en = (double)turning_radius * M_PI * 2 * (90.0/360) * counts_per_1mm;
 const double turn45_arc_en = (double)turning_radius * M_PI * 2 * (45.0/360) * counts_per_1mm;
+
+
+int32_t Err, P, D, old_Error;
+int32_t temp_1, temp_2, temp_3;
+bool useIRSensor;
+uint16_t oe2;
+int32_t ofs;
+uint16_t left_sensor45, right_sensor45, left_sensor90,
+	right_sensor90, left_sensor0, right_sensor0;
+bool hasleftWalllast, hasrightWalllast;
+uint16_t speed0, speed1;
+
+void pid_normal();
+void pid_diagonal();
 
 void u_turnf(uint8_t *direction) {
 	switch(*direction){
@@ -120,14 +129,14 @@ void u_turnf(uint8_t *direction) {
 
 void turn_left45(uint8_t *direction) {
 	switch(*direction){
-		case west:  *direction = south_west; break;
-		case east:  *direction = north_east; break;
+		case west:  *direction = south_west;  break;
+		case east:  *direction = north_east;  break;
 		case north: *direction = north_west;  break;
 		case south: *direction = south_east;  break;
-		case north_west: *direction = west;  break;
+		case north_west: *direction = west;   break;
 		case north_east: *direction = north;  break;
 		case south_west: *direction = south;  break;
-		case south_east: *direction = east;  break;
+		case south_east: *direction = east;   break;
 	}
 	if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) != htim1.Init.Period ||
 			__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_2) != htim1.Init.Period){
@@ -177,13 +186,13 @@ void turn_left45(uint8_t *direction) {
 
 void turn_right45(uint8_t *direction) {
 	switch(*direction){
-		case west:  *direction = north_west; break;
-		case east:  *direction = south_east; break;
+		case west:  *direction = north_west;  break;
+		case east:  *direction = south_east;  break;
 		case north: *direction = north_east;  break;
 		case south: *direction = south_west;  break;
 		case north_west: *direction = north;  break;
-		case north_east: *direction = east;  break;
-		case south_west: *direction = west;  break;
+		case north_east: *direction = east;   break;
+		case south_west: *direction = west;   break;
 		case south_east: *direction = south;  break;
 	}
 
@@ -380,20 +389,23 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 	set_counterTIM2_3(TIM2->CNT + 100, TIM3->CNT + 100);
 
 	status = straight;
-	int32_t Err, P, D, old_Error = 0;
-	int32_t temp_1, temp_2, temp_3;
-	bool useIRSensor = true;
-	uint16_t oe2 = 0;
-	int32_t ofs;
+	old_Error = 0;
+	useIRSensor = true;
+	oe2 = 0;
+	left_sensor45
+		= right_sensor45
+		= left_sensor90
+		= right_sensor90
+		= left_sensor0
+		= right_sensor0
+		= 8000;
 	uint16_t temp;
-	uint16_t left_sensor45, right_sensor45, left_sensor90,
-		right_sensor90, left_sensor0 = 8000, right_sensor0 = 8000;
 	vl53l0x_GetRanging_now(leftSensor90,  &left_sensor90);
 	vl53l0x_GetRanging_now(rightSensor90, &right_sensor90);
-	bool hasleftWalllast = left_sensor90 < HasleftWallValue_90;
-	bool hasrightWalllast = right_sensor90 < HasrightWallValue_90;
-	uint16_t speed0 = (next == -1) ? speed_levels[Rmode][0] : 350;
-	uint16_t speed1 = (next == -1) ? speed_levels[Rmode][1] : 350;
+	hasleftWalllast = left_sensor90 < HasleftWallValue_90;
+	hasrightWalllast = right_sensor90 < HasrightWallValue_90;
+	speed0 = (next == -1 || next == -2) ? speed_levels[Rmode][0] : 350;
+	speed1 = (next == -1) ? speed_levels[Rmode][1] : 350;
 
 	if(!isRunning){
 		TIM1->CCR3 = 0;
@@ -411,82 +423,44 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 		vl53l0x_GetRanging_now(rightSensor0,  &right_sensor0);
 		vl53l0x_GetRanging_now(leftSensor90,  &left_sensor90);
 		vl53l0x_GetRanging_now(rightSensor90,  &right_sensor90);
-		if(next == -1 && ((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
-						(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast) ||
-						(left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
-						(right_sensor90 > HasrightWallValue_90 && hasrightWalllast))){
-			temp = round((double)round((double)(TIM3->CNT)/counts_per_300mm) * counts_per_300mm);
-			if((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
-					(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast)){
-				if(abs((int32_t)temp - en) < 50){
+		if(next == -1 || next == 0){ // normal
+			if(next == -1 && ((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
+							(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast) ||
+							(left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
+							(right_sensor90 > HasrightWallValue_90 && hasrightWalllast))){
+				temp = round((double)round((double)(TIM3->CNT)/counts_per_300mm) * counts_per_300mm);
+				if((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
+						(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast)){
+					if(abs((int32_t)temp - en) < 50){
+							__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
+							__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
+							set_counterTIM2_3(0, 0);
+							break;
+					}
+					set_counterTIM2_3(temp + 100, temp + 100);
+				} else if((left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
+						(right_sensor90 > HasrightWallValue_90 && hasrightWalllast)){
+					if(abs((int32_t)temp - en) < 50){
 						__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 						__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
-						set_counterTIM2_3(0, 0);
+						set_counterTIM2_3(round(40 * counts_per_1mm), round(40 * counts_per_1mm));
 						break;
-				}
-				set_counterTIM2_3(temp + 100, temp + 100);
-			} else if((left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
-					(right_sensor90 > HasrightWallValue_90 && hasrightWalllast)){
-				if(abs((int32_t)temp - en) < 50){
-					__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
-					__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
-					set_counterTIM2_3(round(40 * counts_per_1mm), round(40 * counts_per_1mm));
-					break;
-				}
-				temp += round(40 * counts_per_1mm);
-				set_counterTIM2_3(temp + 100, temp + 100);
+					}
+					temp += round(40 * counts_per_1mm);
+					set_counterTIM2_3(temp + 100, temp + 100);
 
+				}
+				hasleftWalllast = left_sensor90 < HasleftWallValue_90;
+				hasrightWalllast = right_sensor90 < HasrightWallValue_90;
 			}
-			hasleftWalllast = left_sensor90 < HasleftWallValue_90;
-			hasrightWalllast = right_sensor90 < HasrightWallValue_90;
+			pid_normal();
+		} else { //diagonal
+			pid_diagonal();
 		}
-		if(left_sensor0 > 150 && left_sensor45 < 350 && left_sensor90 < HasleftWallValue_90
-				&& right_sensor45 < 350 && right_sensor90 < HasrightWallValue_90){
-			Err = (int32_t)right_sensor45 - left_sensor45;
-			D = Err - old_Error;
-			old_Error = Err;
-		} else if(left_sensor0 > 150 && left_sensor45 < 350 && (left_sensor90 < HasleftWallValue_90 ||
-				left_sensor45 < 230)){
-			Err = (int32_t)leftWallValue - left_sensor45;
-			D = Err - old_Error;
-			old_Error = Err;
-			useIRSensor = true;
-		} else if(left_sensor0 > 150 && right_sensor45 < 350 && (right_sensor90 < HasrightWallValue_90 ||
-				right_sensor45 < 230)){
-			Err = (int32_t)right_sensor45 - rightWallValue;
-			D = Err - old_Error;
-			old_Error = Err;
-			useIRSensor = true;
-		} else {
-			if(useIRSensor){
-				ofs = temp_3;
-				old_Error = 0;
-			}
-			temp_1 = TIM2->CNT;
-			temp_2 = TIM3->CNT;
-			Err = temp_2 - (temp_1 + ofs);
-			D = Err - old_Error;
-			old_Error = Err;
-			useIRSensor = false;
-			#if debug == 1
-			a = TIM2->CNT;
-			b = TIM3->CNT;
-			#endif
-		}
-		if(useIRSensor){
-			P = round(P_params[0] * Err + D * 0);
-		} else {
-			P = round(P_params[1] * Err + D * 0);
-		}
-		P = max(-50, min(P, 50));
-		TIM1->CCR3 = 0;
-		TIM1->CCR4 = (uint16_t)speed0 + P;
-		TIM1->CCR1 = (uint16_t)speed1 - P;
-		TIM1->CCR2 = 0;
 	}
 	if(brakee){
-		if(next == -1){
-			running_right_motor(1, 800);
+		if(next == -1 || next == -2){
+			running_right_motor(1, 880);
 			running_left_motor(1, 880);
 			HAL_Delay(70);
 			brake(2);
@@ -497,6 +471,89 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 			brake(2);
 		}
 	}
+}
+
+
+
+void pid_normal(){
+	if(left_sensor0 > 150 && left_sensor45 < 350 && left_sensor90 < HasleftWallValue_90
+			&& right_sensor45 < 350 && right_sensor90 < HasrightWallValue_90){
+		Err = (int32_t)right_sensor45 - left_sensor45;
+		D = Err - old_Error;
+		old_Error = Err;
+	} else if(left_sensor0 > 150 && left_sensor45 < 350 && (left_sensor90 < HasleftWallValue_90 ||
+			left_sensor45 < 230)){
+		Err = (int32_t)leftWallValue - left_sensor45;
+		D = Err - old_Error;
+		old_Error = Err;
+		useIRSensor = true;
+	} else if(left_sensor0 > 150 && right_sensor45 < 350 && (right_sensor90 < HasrightWallValue_90 ||
+			right_sensor45 < 230)){
+		Err = (int32_t)right_sensor45 - rightWallValue;
+		D = Err - old_Error;
+		old_Error = Err;
+		useIRSensor = true;
+	} else {
+		if(useIRSensor){
+			ofs = temp_3;
+			old_Error = 0;
+		}
+		temp_1 = TIM2->CNT;
+		temp_2 = TIM3->CNT;
+		Err = temp_2 - (temp_1 + ofs);
+		D = Err - old_Error;
+		old_Error = Err;
+		useIRSensor = false;
+		#if debug == 1
+		a = TIM2->CNT;
+		b = TIM3->CNT;
+		#endif
+	}
+	if(useIRSensor){
+		P = round(P_params[0] * Err + D * 0);
+	} else {
+		P = round(P_params[1] * Err + D * 0);
+	}
+	P = max(-50, min(P, 50));
+	TIM1->CCR3 = 0;
+	TIM1->CCR4 = (uint16_t)speed0 + P;
+	TIM1->CCR1 = (uint16_t)speed1 - P;
+	TIM1->CCR2 = 0;
+}
+
+
+void pid_diagonal(){
+	if(left_sensor45 < 120){
+		Err = 120 - left_sensor45;
+		useIRSensor = true;
+	} else if(right_sensor45 < 120){
+		Err = right_sensor45 - 120;
+		useIRSensor = true;
+	} else {
+		if(useIRSensor){
+			ofs = temp_3;
+			old_Error = 0;
+		}
+		temp_1 = TIM2->CNT;
+		temp_2 = TIM3->CNT;
+		Err = temp_2 - (temp_1 + ofs);
+		D = Err - old_Error;
+		old_Error = Err;
+		useIRSensor = false;
+		#if debug == 1
+		a = TIM2->CNT;
+		b = TIM3->CNT;
+		#endif
+	}
+	if(useIRSensor){
+		P = round(1.5 * Err + D * 0);
+	} else {
+		P = round(P_params[1] * Err + D * 0);
+	}
+	TIM1->CCR3 = 0;
+	TIM1->CCR4 = (uint16_t)speed0 + P;
+	TIM1->CCR1 = (uint16_t)speed1 - P;
+	TIM1->CCR2 = 0;
 }
 
 void brake(uint8_t mode){

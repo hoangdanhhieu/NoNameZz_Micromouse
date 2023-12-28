@@ -19,6 +19,53 @@ static uint8_t direction;
 uint16_t path_index;
 
 
+void running(){
+	#if debug == 1
+	sprintf((char*)uart_buffer, "shortestPath:[\n");
+	HAL_UART_Transmit(&huart3, uart_buffer, sizeof(uart_buffer), 10);
+	for(int i = 0; i <= path_index; i++){
+		sprintf((char*)uart_buffer, "%d, ", (int)round(shortestPath[i]));
+		HAL_UART_Transmit(&huart3, uart_buffer, sizeof(uart_buffer), 10);
+	}
+	sprintf((char*)uart_buffer, "\n]\n");
+	HAL_UART_Transmit(&huart3, uart_buffer, sizeof(uart_buffer), 10);
+	#endif
+	uint8_t direction = north;
+	int32_t t;
+	for(int i = 0; i <= path_index; i++){
+		t = (int32_t)round(shortestPath[i]);
+		switch(t){
+			case turn_left_45:
+				turn_left45(&direction);
+				break;
+			case turn_right_45:
+				turn_right45(&direction);
+				break;
+			case turn_left_90:
+				turn_left90(&direction);
+				break;
+			case turn_right_90:
+				turn_right90(&direction);
+				break;
+			default:
+				if(direction == north || direction == south || direction == west || direction == east){
+					if(t >= 300){
+						if(t % 300 == 0){
+							go_straight((double)round(shortestPath[i]/300) * 300, 1, -1);
+						} else {
+							go_straight((double)round(shortestPath[i]/300) * 300, 0, -1);
+							go_straight((double)(t % 300), 1, 0);
+						}
+					} else {
+						go_straight(shortestPath[i], 1, 0);
+					}
+				} else {
+					go_straight(shortestPath[i], 1, -2);
+				}
+		}
+	}
+}
+
 void add_path(double pram1, double param2, double param3, uint8_t param4);
 
 void findShortestPath(){

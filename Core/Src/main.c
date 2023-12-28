@@ -94,8 +94,8 @@ static void MX_USART3_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 0, 9 }; //{5, 9}
-const uint8_t ending_coordinates[2] = { 9, 9 }; //{4, 0}
-const int32_t speed_levels[3][2] = {{0, 0}, {550, 600}, {999, 999}};
+const uint8_t ending_coordinates[2] = { 0, 7 }; //{4, 0}
+const int32_t speed_levels[3][2] = {{0, 0}, {550, 600}, {750, 800}};
 double P_params[2] = {1, 5};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
@@ -248,25 +248,8 @@ int main(void)
 			HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 			HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 			HAL_Delay(1000);
-			uint8_t direction = north;
-			for(int i = 0; i <= path_index; i++){
-				switch((int32_t)round(shortestPath[i])){
-					case turn_left_45:
-						turn_left45(&direction);
-						break;
-					case turn_right_45:
-						turn_right45(&direction);
-						break;
-					case turn_left_90:
-						turn_left90(&direction);
-						break;
-					case turn_right_90:
-						turn_right90(&direction);
-						break;
-					default:
-						go_straight(shortestPath[i], 1, 0);
-				}
-			}
+			go_straight(300, 1, -1);
+			running();
 
 			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 			HAL_NVIC_EnableIRQ(EXTI1_IRQn);

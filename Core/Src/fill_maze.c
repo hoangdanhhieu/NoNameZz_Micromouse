@@ -81,11 +81,11 @@ void start_fill() {
 		}
 		visited[y][x] = true;
 		if(x == ending_coordinates[0] && y == ending_coordinates[1]){
-			found(i);
+			//found(i);
 			maze[y][x] |= top_wall;
 			found_path = 1;
 			brake(2);
-			for(int i = 0; i < 25; i++){
+			for(int i = 0; i < 15; i++){
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 				HAL_Delay(100);
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);

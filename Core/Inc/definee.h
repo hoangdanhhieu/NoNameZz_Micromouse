@@ -54,6 +54,8 @@
 
 
 const static float WidthOESide = (float)(square_size - dbtWheels_r)/2;
-
+const static double wheels_arc = (double)wheels_radius * M_PI * 2;
+const static double counts_per_1mm = (double)encoder_resolution / wheels_arc;
+const static double counts_per_300mm = counts_per_1mm * 300;
 
 #endif /* INC_DEFINEE_H_ */
