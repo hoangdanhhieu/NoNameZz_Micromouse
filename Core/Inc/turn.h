@@ -24,6 +24,7 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern volatile int8_t status;
 extern volatile uint8_t Rmode;
+extern int16_t length_stack;
 extern const int32_t speed_levels[3][2];
 extern int a, b, c, d, e;
 extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];

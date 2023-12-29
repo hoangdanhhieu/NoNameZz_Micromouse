@@ -19,6 +19,52 @@ static uint8_t direction;
 uint16_t path_index;
 
 
+
+
+void running_OPPath(){
+	int32_t t;
+	uint8_t direction = north;
+	for(int i = 1; i <= path_index; i++){
+		t = round(shortestPath[i]);
+		switch(t){
+			case turn_left_90:
+				turnLeftHere;
+				break;
+			case turn_right_90:
+				turnRightHere;
+				break;
+			default:
+				go_straight(shortestPath[i], 0, -1);
+		}
+	}
+	brake(2);
+}
+
+void OPPath(){
+	shortestPath[0] = 0;
+	path_index = 0;
+	for(int i = 0; i <= length_stack; i++){
+		if(stack[i][0] == straight){
+			if(stack[i][1] == -1){
+				if(shortestPath[path_index] > 0){
+					shortestPath[path_index] += (300 * stack[i][2]);
+				} else {
+					shortestPath[++path_index] = 300 * stack[i][2];
+				}
+			} else {
+				if(shortestPath[path_index] > 0){
+					shortestPath[path_index]+=300;
+				} else {
+					shortestPath[++path_index] = 300;
+				}
+			}
+		} else {
+			shortestPath[++path_index] = stack[i][0];
+		}
+	}
+}
+
+
 void running(){
 	#if debug == 1
 	sprintf((char*)uart_buffer, "shortestPath:[\n");
@@ -67,7 +113,6 @@ void running(){
 }
 
 void add_path(double pram1, double param2, double param3, uint8_t param4);
-
 void findShortestPath(){
     memset(visited, false, sizeof(visited));
     for(uint16_t i = 0; i < grid_size * grid_size; i++)
@@ -77,11 +122,11 @@ void findShortestPath(){
     int16_t curr = 2;
 
     temp[0][0] = ending_coordinates[0];
-    temp[0][1] = ending_coordinates[1] - 2;
+    temp[0][1] = (int16_t)ending_coordinates[1] - 2;
     temp[0][2] = -1;
 
     temp[1][0] = ending_coordinates[0];
-    temp[1][1] = ending_coordinates[1] - 1;
+    temp[1][1] = (int16_t)ending_coordinates[1] - 1;
     temp[1][2] = 0;
 
     temp[2][0] = ending_coordinates[0];

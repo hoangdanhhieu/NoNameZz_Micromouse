@@ -20,6 +20,7 @@ extern uint8_t maze[grid_size][grid_size];
 extern bool visited[grid_size][grid_size];
 extern int8_t stack[grid_size * grid_size][3];
 extern VL53L0X_Dev_t *pMyDevice[n_vl53l0x];
+extern int16_t length_stack;
 extern uint16_t ts1, ts2, ts3, ts4, ts5, ts6;
 extern uint8_t found_path;
 void start_fill();

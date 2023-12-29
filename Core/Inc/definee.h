@@ -58,4 +58,13 @@ const static double wheels_arc = (double)wheels_radius * M_PI * 2;
 const static double counts_per_1mm = (double)encoder_resolution / wheels_arc;
 const static double counts_per_300mm = counts_per_1mm * 300;
 
+
+#define turnLeftHere go_straight(square_size/2 + 40, 1, 0); \
+						turn_left90(&direction); \
+						go_straight(square_size/2 - 40, 0, 0);
+
+#define turnRightHere go_straight(square_size/2 + 10, 1, 0); \
+						turn_right90(&direction); \
+						go_straight(square_size/2 - 30, 0, 0);
+
 #endif /* INC_DEFINEE_H_ */

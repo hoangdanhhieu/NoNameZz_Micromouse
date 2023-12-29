@@ -10,21 +10,15 @@
 #define right_wall 4
 #define top_wall 2
 #define bottom_wall 1
-#define turnLeftHere go_straight(square_size/2 + 40, 1, 0); \
-						turn_left90(&direction); \
-						go_straight(square_size/2 - 40, 0, 0);
-
-#define turnRightHere go_straight(square_size/2 + 10, 1, 0); \
-						turn_right90(&direction); \
-						go_straight(square_size/2 - 30, 0, 0);
 
 
 int8_t stack[grid_size * grid_size][3];
+int16_t length_stack;
 int8_t x, y;
 static uint8_t direction;
 
 
-void found(int16_t index);
+void found(int16_t *index);
 void set_wall(bool rbl, bool rbr, bool rbf);
 
 
@@ -81,7 +75,7 @@ void start_fill() {
 		}
 		visited[y][x] = true;
 		if(x == ending_coordinates[0] && y == ending_coordinates[1]){
-			//found(i);
+			found(&i);
 			maze[y][x] |= top_wall;
 			found_path = 1;
 			brake(2);
@@ -265,16 +259,25 @@ void start_fill() {
 			}
 		}
 	}
+	length_stack = i;
 }
-void found(int16_t index){
+void found(int16_t *index){
+	(*index)++;
 	switch(direction){
 		case west:
+			stack[*index][0] = turn_right_90;
+			stack[*index][1] = -1;
 			turnRightHere;
 			break;
 		case east:
+			stack[*index][0] = turn_left_90;
+			stack[*index][1] = -1;
 			turnLeftHere;
 			break;
 		case north:
+			stack[*index][0] = straight;
+			stack[*index][1] = -1;
+			stack[*index][2] = 2;
 			go_straight(square_size * 2, 1, -1);
 			break;
 	}
