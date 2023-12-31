@@ -34,11 +34,11 @@
 #define wheels_radius       30
 #define encoder_resolution 1232
 
-#define HasleftWallValue_45  300
-#define HasrightWallValue_45  300
+#define HasleftWallValue_45  270
+#define HasrightWallValue_45  270
 #define HasfrontWallValue  400
-#define HasleftWallValue_90  130
-#define HasrightWallValue_90  130
+#define HasleftWallValue_90  150
+#define HasrightWallValue_90  150
 
 #define leftWallValue 200
 #define rightWallValue 200
@@ -61,9 +61,9 @@ const static double counts_per_300mm = counts_per_1mm * 300;
 
 #define turnLeftHere go_straight(square_size/2 + 40, 1, 0); \
 						turn_left90(&direction); \
-						go_straight(square_size/2 - 40, 0, 0);
+						go_straight(square_size/2 - 20, 0, 0);
 
-#define turnRightHere go_straight(square_size/2 + 10, 1, 0); \
+#define turnRightHere go_straight(square_size/2 + 20, 1, 0); \
 						turn_right90(&direction); \
 						go_straight(square_size/2 - 30, 0, 0);
 

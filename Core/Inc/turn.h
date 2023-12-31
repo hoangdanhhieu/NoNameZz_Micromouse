@@ -18,7 +18,7 @@
 
 
 
-extern double P_params[2];
+extern double P_params[3][2];
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;

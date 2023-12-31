@@ -140,9 +140,9 @@ void start_fill() {
 				turnRightHere;
 			}
 		} else {
-			go_straight(170, 1, -2);
+			go_straight(170, 1, 0);
 			u_turnf(&direction);
-			go_straight(100, 0, -2);
+			go_straight(100, 0, 0);
 			if(stack[i][1] != -1 &&
 					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
 					((maze[stack[i][2]][stack[i][1]] & 4) != 0 || visited[stack[i][2]][stack[i][1] + 1]) &&
@@ -260,6 +260,7 @@ void start_fill() {
 		}
 	}
 	length_stack = i;
+	brake(2);
 }
 void found(int16_t *index){
 	(*index)++;

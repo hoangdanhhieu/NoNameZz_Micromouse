@@ -14,4 +14,6 @@ extern const uint8_t starting_coordinates[2];
 extern bool visited[grid_size][grid_size];
 extern const uint8_t ending_coordinates[2];
 void running();
+void OPPath();
+void running_OPPath();
 void findShortestPath();
