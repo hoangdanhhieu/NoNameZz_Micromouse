@@ -40,8 +40,8 @@
 #define HasleftWallValue_90  150
 #define HasrightWallValue_90  150
 
-#define leftWallValue 200
-#define rightWallValue 200
+#define leftWallValue 210
+#define rightWallValue 210
 
 #define n_vl53l0x 6
 

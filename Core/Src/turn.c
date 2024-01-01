@@ -430,7 +430,7 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 				temp = round((double)round((double)(TIM3->CNT)/counts_per_300mm) * counts_per_300mm);
 				if((left_sensor90 < HasleftWallValue_90 && !hasleftWalllast) ||
 						(right_sensor90 < HasrightWallValue_90 && !hasrightWalllast)){
-					if(abs((int32_t)temp - en) < 50){
+					if(abs((int32_t)temp - en) < 100){
 							__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 							__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 							set_counterTIM2_3(0, 0);
@@ -439,7 +439,7 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 					set_counterTIM2_3(temp + 100, temp + 100);
 				} else if((left_sensor90 > HasleftWallValue_90 && hasleftWalllast) ||
 						(right_sensor90 > HasrightWallValue_90 && hasrightWalllast)){
-					if(abs((int32_t)temp - en) < 50){
+					if(abs((int32_t)temp - en) < 100){
 						__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 						__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 						set_counterTIM2_3(round(40 * counts_per_1mm), round(40 * counts_per_1mm));
@@ -470,7 +470,7 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 			brake(2);
 		}
 	}
-	if(next == 0){
+	if(next == 0 || status == 0){
 		__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
 		__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
 		set_counterTIM2_3(0, 0);
@@ -481,20 +481,20 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 
 
 void pid_normal(){
-	if((left_sensor0 > 150 || right_sensor0 > 150) && left_sensor45 < 350 && left_sensor90 < 180
+	if((left_sensor0 > 180 || right_sensor0 > 180) && left_sensor45 < 350 && left_sensor90 < 180
 			&& right_sensor45 < 350 && right_sensor90 < 180){
 		Err = (int32_t)right_sensor45 - left_sensor45;
 		D = Err - old_Error;
 		old_Error = Err;
 		useIRSensor = true;
-	} else if((left_sensor0 > 150 || right_sensor0 > 150) && left_sensor45 < 350 && (left_sensor90 < 180 ||
-			left_sensor45 < 230)){
+	} else if((left_sensor0 > 180 || right_sensor0 > 150) && left_sensor45 < 350 && (left_sensor90 < 180 ||
+			left_sensor45 < 0)){
 		Err = (int32_t)leftWallValue - left_sensor45;
 		D = Err - old_Error;
 		old_Error = Err;
 		useIRSensor = true;
-	} else if((left_sensor0 > 150 || right_sensor0 > 150) && right_sensor45 < 350 && (right_sensor90 < 180 ||
-			right_sensor45 < 230)){
+	} else if((left_sensor0 > 180 || right_sensor0 > 150) && right_sensor45 < 350 && (right_sensor90 < 180 ||
+			right_sensor45 < 0)){
 		Err = (int32_t)right_sensor45 - rightWallValue;
 		D = Err - old_Error;
 		old_Error = Err;
