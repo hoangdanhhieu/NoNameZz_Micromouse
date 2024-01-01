@@ -529,11 +529,11 @@ void pid_normal(){
 
 
 void pid_diagonal(){
-	if(left_sensor45 < 120){
-		Err = 120 - left_sensor45;
+	if(left_sensor45 < 200){
+		Err = (int32_t)200 - left_sensor45;
 		useIRSensor = true;
-	} else if(right_sensor45 < 120){
-		Err = right_sensor45 - 120;
+	} else if(right_sensor45 < 200){
+		Err = (int32_t)right_sensor45 - 200;
 		useIRSensor = true;
 	} else {
 		if(useIRSensor){
@@ -554,7 +554,7 @@ void pid_diagonal(){
 	if(useIRSensor){
 		P = round(1.5 * Err + D * 0);
 	} else {
-		P = round(P_params[Rmode][1] * Err + D * 0);
+		P = round(3 * Err + D * 0);
 	}
 	TIM1->CCR3 = 0;
 	TIM1->CCR4 = (uint16_t)speed0 + P;

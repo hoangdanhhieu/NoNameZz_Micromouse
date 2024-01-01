@@ -9,7 +9,7 @@
 
 
 const int8_t move[4][3] = {{0, -1, 8}, {0, 1, 4}, {-1, 0, 2}, {1, 0, 1}};
-const double half_diagonal = sqrt(pow(square_size/2, 2) + pow(square_size/2, 2));
+const double half_diagonal = sqrt(pow(square_size/2, 2) + pow(square_size/2, 2)) + 3;
 const double offset45 = 0; //(float)tan(22.5 * M_PI / 180) * dbtWheels_r;
 const double offset90 = 0; //dbtWheels_r;
 
