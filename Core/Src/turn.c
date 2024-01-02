@@ -100,9 +100,9 @@ void u_turnf(uint8_t *direction) {
 	uint16_t speed = 500;
 	int32_t P;
 
-	TIM1->CCR3 = 150;
+	TIM1->CCR3 = 250;
 	TIM1->CCR4 = 0;
-	TIM1->CCR1 = 150;
+	TIM1->CCR1 = 250;
 	TIM1->CCR2 = 0;
 	HAL_Delay(100);
 

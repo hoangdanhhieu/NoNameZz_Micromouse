@@ -5775,7 +5775,7 @@ int main(void)
  80034de:	f001 fac3 	bl	8004a68 <go_straight>
 			start_fill();
  80034e2:	f7fd fc95 	bl	8000e10 <start_fill>
-			//go_straight(300, 1, -2);
+			//u_turnf(NULL);
 			if(found_path == 1){
  80034e6:	4b3a      	ldr	r3, [pc, #232]	; (80035d0 <main+0x298>)
  80034e8:	781b      	ldrb	r3, [r3, #0]
@@ -8290,17 +8290,17 @@ void u_turnf(uint8_t *direction) {
  800441a:	827b      	strh	r3, [r7, #18]
 	int32_t P;
 
-	TIM1->CCR3 = 150;
+	TIM1->CCR3 = 250;
  800441c:	4b44      	ldr	r3, [pc, #272]	; (8004530 <u_turnf+0x238>)
- 800441e:	2296      	movs	r2, #150	; 0x96
+ 800441e:	22fa      	movs	r2, #250	; 0xfa
  8004420:	63da      	str	r2, [r3, #60]	; 0x3c
 	TIM1->CCR4 = 0;
  8004422:	4b43      	ldr	r3, [pc, #268]	; (8004530 <u_turnf+0x238>)
  8004424:	2200      	movs	r2, #0
  8004426:	641a      	str	r2, [r3, #64]	; 0x40
-	TIM1->CCR1 = 150;
+	TIM1->CCR1 = 250;
  8004428:	4b41      	ldr	r3, [pc, #260]	; (8004530 <u_turnf+0x238>)
- 800442a:	2296      	movs	r2, #150	; 0x96
+ 800442a:	22fa      	movs	r2, #250	; 0xfa
  800442c:	635a      	str	r2, [r3, #52]	; 0x34
 	TIM1->CCR2 = 0;
  800442e:	4b40      	ldr	r3, [pc, #256]	; (8004530 <u_turnf+0x238>)

@@ -86,7 +86,7 @@ static void MX_USART3_UART_Init(void);
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{5, 9}
 const uint8_t ending_coordinates[2] = { 0, 0 }; //{4, 0}
 const int32_t speed_levels[3][2] = {{0, 0}, {600, 650}, {850, 900}};
-double P_params[3][2] = {{0, 0}, {1.3, 5}, {3, 7}};
+double P_params[3][2] = {{0, 0}, {1, 5}, {2, 7}};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 
@@ -224,7 +224,7 @@ int main(void)
 			found_path = 0;
 			go_straight(300, 0, -3);
 			start_fill();
-			//go_straight(300, 1, -2);
+			//u_turnf(NULL);
 			if(found_path == 1){
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 				OPPath();
