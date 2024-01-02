@@ -108,7 +108,7 @@ void u_turnf(uint8_t *direction) {
 
 	while(status != 0){
 		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
-		TIM1->CCR3 = speed - 100 + P;
+		TIM1->CCR3 = speed - 50 + P;
 		TIM1->CCR4 = 0;
 		TIM1->CCR1 = speed - P;
 		TIM1->CCR2 = 0;
@@ -391,7 +391,7 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 	status = straight;
 	old_Error = 0;
 	useIRSensor = true;
-	oe2 = 90;
+	oe2 = 100;
 	left_sensor45
 		= right_sensor45
 		= left_sensor90
@@ -481,25 +481,29 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 
 
 void pid_normal(){
-	if((left_sensor0 > 180 || right_sensor0 > 180) && left_sensor45 < 350 && left_sensor90 < 180
-			&& right_sensor45 < 350 && right_sensor90 < 180){
+	if((left_sensor0 > 180 || right_sensor0 > 180) && left_sensor45 < 310 && left_sensor90 < 180
+			&& right_sensor45 < 310 && right_sensor90 < 180){
+		if(left_sensor45 + right_sensor45 > 450){
+			goto useEncoder;
+		}
 		Err = (int32_t)right_sensor45 - left_sensor45;
 		D = Err - old_Error;
 		old_Error = Err;
 		useIRSensor = true;
-	} else if((left_sensor0 > 180 || right_sensor0 > 150) && left_sensor45 < 350 && (left_sensor90 < 180 ||
+	} else if((left_sensor0 > 180 || right_sensor0 > 180) && left_sensor45 < 310 && (left_sensor90 < 180 ||
 			left_sensor45 < 0)){
 		Err = (int32_t)leftWallValue - left_sensor45;
 		D = Err - old_Error;
 		old_Error = Err;
 		useIRSensor = true;
-	} else if((left_sensor0 > 180 || right_sensor0 > 150) && right_sensor45 < 350 && (right_sensor90 < 180 ||
+	} else if((left_sensor0 > 180 || right_sensor0 > 180) && right_sensor45 < 310 && (right_sensor90 < 180 ||
 			right_sensor45 < 0)){
 		Err = (int32_t)right_sensor45 - rightWallValue;
 		D = Err - old_Error;
 		old_Error = Err;
 		useIRSensor = true;
 	} else {
+		useEncoder:
 		if(useIRSensor){
 			ofs = temp_3;
 			old_Error = 0;
@@ -520,7 +524,11 @@ void pid_normal(){
 	} else {
 		P = round(P_params[Rmode][1] * Err + D * 0);
 	}
-	P = max(-100, min(P, 100));
+	if(Rmode == 1){
+		P = max(-100, min(P, 100));
+	} else {
+		P = max(-150, min(P, 150));
+	}
 	TIM1->CCR3 = 0;
 	TIM1->CCR4 = (uint16_t)speed0 + P;
 	TIM1->CCR1 = (uint16_t)speed1 - P;

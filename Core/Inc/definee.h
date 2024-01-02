@@ -34,8 +34,8 @@
 #define wheels_radius       30
 #define encoder_resolution 1232
 
-#define HasleftWallValue_45  270
-#define HasrightWallValue_45  270
+#define HasleftWallValue_45  300
+#define HasrightWallValue_45  300
 #define HasfrontWallValue  400
 #define HasleftWallValue_90  150
 #define HasrightWallValue_90  150
