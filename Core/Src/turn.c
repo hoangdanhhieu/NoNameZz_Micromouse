@@ -293,8 +293,10 @@ void turn_left90(uint8_t *direction) {
 		TIM1->CCR1 = speed - P;
 		TIM1->CCR2 = 0;
 	}
-	running_left_motor(0, 700);
-	running_right_motor(1, 700);
+	TIM1->CCR3 = 0;
+	TIM1->CCR4 = 700;
+	TIM1->CCR1 = 0;
+	TIM1->CCR2 = 700;
 	HAL_Delay(50);
 	brake(2);
 	__HAL_TIM_SET_COUNTER(&htim2, 100);
