@@ -142,7 +142,7 @@ void start_fill() {
 		} else {
 			go_straight(170, 1, 0);
 			u_turnf(&direction);
-			go_straight(100, 0, 0);
+			go_straight(70, 0, 0);
 			if(stack[i][1] != -1 &&
 					((maze[stack[i][2]][stack[i][1]] & 8) != 0 || visited[stack[i][2]][stack[i][1] - 1]) &&
 					((maze[stack[i][2]][stack[i][1]] & 4) != 0 || visited[stack[i][2]][stack[i][1] + 1]) &&

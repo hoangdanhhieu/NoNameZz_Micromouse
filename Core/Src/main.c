@@ -85,8 +85,8 @@ static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN 0 */
 const uint8_t starting_coordinates[2] = { 5, 9 }; //{5, 9}
 const uint8_t ending_coordinates[2] = { 5, 2 }; //{4, 0}
-const int32_t speed_levels[3][2] = {{0, 0}, {650, 700}, {850, 900}};
-double P_params[3][2] = {{0, 0}, {1, 5}, {1.2, 5}};
+const int32_t speed_levels[3][2] = {{0, 0}, {550, 600}, {700, 750}};
+double P_params[3][2] = {{0, 0}, {1, 5}, {1, 5}};
 uint8_t maze[grid_size][grid_size];
 bool visited[grid_size][grid_size];
 

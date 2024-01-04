@@ -97,7 +97,7 @@ void u_turnf(uint8_t *direction) {
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	status = u_turn;
 
-	uint16_t speed = 500;
+	uint16_t speed = 400;
 	int32_t P;
 
 	TIM1->CCR3 = 250;
@@ -108,7 +108,7 @@ void u_turnf(uint8_t *direction) {
 
 	while(status != 0){
 		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
-		TIM1->CCR3 = speed - 50 + P;
+		TIM1->CCR3 = speed + P;
 		TIM1->CCR4 = 0;
 		TIM1->CCR1 = speed - P;
 		TIM1->CCR2 = 0;
@@ -393,7 +393,7 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 	status = straight;
 	old_Error = 0;
 	useIRSensor = true;
-	oe2 = 120;
+	oe2 = 90;
 	left_sensor45
 		= right_sensor45
 		= left_sensor90

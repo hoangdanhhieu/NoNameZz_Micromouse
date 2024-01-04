@@ -37,13 +37,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0001b805  00000000  00000000  00042b50  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00018c56  00000000  00000000  0005e355  2**0
+ 17 .debug_line   00018c53  00000000  00000000  0005e355  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00095f4b  00000000  00000000  00076fab  2**0
+ 18 .debug_str    00095f4b  00000000  00000000  00076fa8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000049  00000000  00000000  0010cef6  2**0
+ 19 .comment      00000049  00000000  00000000  0010cef3  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  000062f8  00000000  00000000  0010cf40  2**2
+ 20 .debug_frame  000062f8  00000000  00000000  0010cf3c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -2336,7 +2336,7 @@ void start_fill() {
 			u_turnf(&direction);
  80017aa:	48c9      	ldr	r0, [pc, #804]	; (8001ad0 <start_fill+0xcc0>)
  80017ac:	f002 fdb0 	bl	8004310 <u_turnf>
-			go_straight(100, 0, 0);
+			go_straight(70, 0, 0);
  80017b0:	2300      	movs	r3, #0
  80017b2:	2200      	movs	r2, #0
  80017b4:	f04f 0000 	mov.w	r0, #0
@@ -2696,7 +2696,7 @@ void start_fill() {
  8001aca:	e021      	b.n	8001b10 <start_fill+0xd00>
  8001acc:	40654000 	.word	0x40654000
  8001ad0:	200004ac 	.word	0x200004ac
- 8001ad4:	40590000 	.word	0x40590000
+ 8001ad4:	40518000 	.word	0x40518000
  8001ad8:	2000037c 	.word	0x2000037c
  8001adc:	20000624 	.word	0x20000624
  8001ae0:	20000688 	.word	0x20000688
@@ -8293,8 +8293,8 @@ void u_turnf(uint8_t *direction) {
  800442a:	22fb      	movs	r2, #251	; 0xfb
  800442c:	701a      	strb	r2, [r3, #0]
 
-	uint16_t speed = 500;
- 800442e:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
+	uint16_t speed = 400;
+ 800442e:	f44f 73c8 	mov.w	r3, #400	; 0x190
  8004432:	827b      	strh	r3, [r7, #18]
 	int32_t P;
 
@@ -8319,7 +8319,7 @@ void u_turnf(uint8_t *direction) {
  800444e:	f001 f99f 	bl	8005790 <HAL_Delay>
 
 	while(status != 0){
- 8004452:	e02a      	b.n	80044aa <u_turnf+0x19a>
+ 8004452:	e028      	b.n	80044a6 <u_turnf+0x196>
 		P = ((int32_t)TIM3->CNT - ((int32_t)en - TIM2->CNT)) * 5;
  8004454:	4b38      	ldr	r3, [pc, #224]	; (8004538 <u_turnf+0x228>)
  8004456:	6a5a      	ldr	r2, [r3, #36]	; 0x24
@@ -8332,105 +8332,105 @@ void u_turnf(uint8_t *direction) {
  8004466:	009b      	lsls	r3, r3, #2
  8004468:	4413      	add	r3, r2
  800446a:	60fb      	str	r3, [r7, #12]
-		TIM1->CCR3 = speed - 50 + P;
- 800446c:	8a7b      	ldrh	r3, [r7, #18]
- 800446e:	f1a3 0232 	sub.w	r2, r3, #50	; 0x32
- 8004472:	68fb      	ldr	r3, [r7, #12]
- 8004474:	441a      	add	r2, r3
- 8004476:	4b34      	ldr	r3, [pc, #208]	; (8004548 <u_turnf+0x238>)
- 8004478:	63da      	str	r2, [r3, #60]	; 0x3c
+		TIM1->CCR3 = speed + P;
+ 800446c:	8a7a      	ldrh	r2, [r7, #18]
+ 800446e:	68fb      	ldr	r3, [r7, #12]
+ 8004470:	441a      	add	r2, r3
+ 8004472:	4b35      	ldr	r3, [pc, #212]	; (8004548 <u_turnf+0x238>)
+ 8004474:	63da      	str	r2, [r3, #60]	; 0x3c
 		TIM1->CCR4 = 0;
- 800447a:	4b33      	ldr	r3, [pc, #204]	; (8004548 <u_turnf+0x238>)
- 800447c:	2200      	movs	r2, #0
- 800447e:	641a      	str	r2, [r3, #64]	; 0x40
+ 8004476:	4b34      	ldr	r3, [pc, #208]	; (8004548 <u_turnf+0x238>)
+ 8004478:	2200      	movs	r2, #0
+ 800447a:	641a      	str	r2, [r3, #64]	; 0x40
 		TIM1->CCR1 = speed - P;
- 8004480:	8a7a      	ldrh	r2, [r7, #18]
- 8004482:	68fb      	ldr	r3, [r7, #12]
- 8004484:	1ad2      	subs	r2, r2, r3
- 8004486:	4b30      	ldr	r3, [pc, #192]	; (8004548 <u_turnf+0x238>)
- 8004488:	635a      	str	r2, [r3, #52]	; 0x34
+ 800447c:	8a7a      	ldrh	r2, [r7, #18]
+ 800447e:	68fb      	ldr	r3, [r7, #12]
+ 8004480:	1ad2      	subs	r2, r2, r3
+ 8004482:	4b31      	ldr	r3, [pc, #196]	; (8004548 <u_turnf+0x238>)
+ 8004484:	635a      	str	r2, [r3, #52]	; 0x34
 		TIM1->CCR2 = 0;
- 800448a:	4b2f      	ldr	r3, [pc, #188]	; (8004548 <u_turnf+0x238>)
- 800448c:	2200      	movs	r2, #0
- 800448e:	639a      	str	r2, [r3, #56]	; 0x38
+ 8004486:	4b30      	ldr	r3, [pc, #192]	; (8004548 <u_turnf+0x238>)
+ 8004488:	2200      	movs	r2, #0
+ 800448a:	639a      	str	r2, [r3, #56]	; 0x38
 		#if debug == 1
 		a = (int32_t)en - TIM2->CNT;
- 8004490:	8aba      	ldrh	r2, [r7, #20]
- 8004492:	f04f 4380 	mov.w	r3, #1073741824	; 0x40000000
- 8004496:	6a5b      	ldr	r3, [r3, #36]	; 0x24
- 8004498:	1ad3      	subs	r3, r2, r3
- 800449a:	461a      	mov	r2, r3
- 800449c:	4b2b      	ldr	r3, [pc, #172]	; (800454c <u_turnf+0x23c>)
- 800449e:	601a      	str	r2, [r3, #0]
+ 800448c:	8aba      	ldrh	r2, [r7, #20]
+ 800448e:	f04f 4380 	mov.w	r3, #1073741824	; 0x40000000
+ 8004492:	6a5b      	ldr	r3, [r3, #36]	; 0x24
+ 8004494:	1ad3      	subs	r3, r2, r3
+ 8004496:	461a      	mov	r2, r3
+ 8004498:	4b2c      	ldr	r3, [pc, #176]	; (800454c <u_turnf+0x23c>)
+ 800449a:	601a      	str	r2, [r3, #0]
 		b = TIM3->CNT;
- 80044a0:	4b25      	ldr	r3, [pc, #148]	; (8004538 <u_turnf+0x228>)
- 80044a2:	6a5b      	ldr	r3, [r3, #36]	; 0x24
- 80044a4:	461a      	mov	r2, r3
- 80044a6:	4b2a      	ldr	r3, [pc, #168]	; (8004550 <u_turnf+0x240>)
- 80044a8:	601a      	str	r2, [r3, #0]
+ 800449c:	4b26      	ldr	r3, [pc, #152]	; (8004538 <u_turnf+0x228>)
+ 800449e:	6a5b      	ldr	r3, [r3, #36]	; 0x24
+ 80044a0:	461a      	mov	r2, r3
+ 80044a2:	4b2b      	ldr	r3, [pc, #172]	; (8004550 <u_turnf+0x240>)
+ 80044a4:	601a      	str	r2, [r3, #0]
 	while(status != 0){
- 80044aa:	4b26      	ldr	r3, [pc, #152]	; (8004544 <u_turnf+0x234>)
- 80044ac:	781b      	ldrb	r3, [r3, #0]
- 80044ae:	b25b      	sxtb	r3, r3
- 80044b0:	2b00      	cmp	r3, #0
- 80044b2:	d1cf      	bne.n	8004454 <u_turnf+0x144>
+ 80044a6:	4b27      	ldr	r3, [pc, #156]	; (8004544 <u_turnf+0x234>)
+ 80044a8:	781b      	ldrb	r3, [r3, #0]
+ 80044aa:	b25b      	sxtb	r3, r3
+ 80044ac:	2b00      	cmp	r3, #0
+ 80044ae:	d1d1      	bne.n	8004454 <u_turnf+0x144>
 		#endif
 	}
 	running_left_motor(0, 600);
- 80044b4:	4b1f      	ldr	r3, [pc, #124]	; (8004534 <u_turnf+0x224>)
- 80044b6:	681b      	ldr	r3, [r3, #0]
- 80044b8:	2200      	movs	r2, #0
- 80044ba:	63da      	str	r2, [r3, #60]	; 0x3c
- 80044bc:	4b1d      	ldr	r3, [pc, #116]	; (8004534 <u_turnf+0x224>)
- 80044be:	681b      	ldr	r3, [r3, #0]
- 80044c0:	f44f 7216 	mov.w	r2, #600	; 0x258
- 80044c4:	641a      	str	r2, [r3, #64]	; 0x40
+ 80044b0:	4b20      	ldr	r3, [pc, #128]	; (8004534 <u_turnf+0x224>)
+ 80044b2:	681b      	ldr	r3, [r3, #0]
+ 80044b4:	2200      	movs	r2, #0
+ 80044b6:	63da      	str	r2, [r3, #60]	; 0x3c
+ 80044b8:	4b1e      	ldr	r3, [pc, #120]	; (8004534 <u_turnf+0x224>)
+ 80044ba:	681b      	ldr	r3, [r3, #0]
+ 80044bc:	f44f 7216 	mov.w	r2, #600	; 0x258
+ 80044c0:	641a      	str	r2, [r3, #64]	; 0x40
 	running_right_motor(1, 600);
- 80044c6:	4b1b      	ldr	r3, [pc, #108]	; (8004534 <u_turnf+0x224>)
- 80044c8:	681b      	ldr	r3, [r3, #0]
- 80044ca:	2200      	movs	r2, #0
- 80044cc:	635a      	str	r2, [r3, #52]	; 0x34
- 80044ce:	4b19      	ldr	r3, [pc, #100]	; (8004534 <u_turnf+0x224>)
- 80044d0:	681b      	ldr	r3, [r3, #0]
- 80044d2:	f44f 7216 	mov.w	r2, #600	; 0x258
- 80044d6:	639a      	str	r2, [r3, #56]	; 0x38
+ 80044c2:	4b1c      	ldr	r3, [pc, #112]	; (8004534 <u_turnf+0x224>)
+ 80044c4:	681b      	ldr	r3, [r3, #0]
+ 80044c6:	2200      	movs	r2, #0
+ 80044c8:	635a      	str	r2, [r3, #52]	; 0x34
+ 80044ca:	4b1a      	ldr	r3, [pc, #104]	; (8004534 <u_turnf+0x224>)
+ 80044cc:	681b      	ldr	r3, [r3, #0]
+ 80044ce:	f44f 7216 	mov.w	r2, #600	; 0x258
+ 80044d2:	639a      	str	r2, [r3, #56]	; 0x38
 	HAL_Delay(50);
- 80044d8:	2032      	movs	r0, #50	; 0x32
- 80044da:	f001 f959 	bl	8005790 <HAL_Delay>
+ 80044d4:	2032      	movs	r0, #50	; 0x32
+ 80044d6:	f001 f95b 	bl	8005790 <HAL_Delay>
 	brake(2);
- 80044de:	2002      	movs	r0, #2
- 80044e0:	f001 f892 	bl	8005608 <brake>
+ 80044da:	2002      	movs	r0, #2
+ 80044dc:	f001 f894 	bl	8005608 <brake>
 	__HAL_TIM_SET_COUNTER(&htim2, 100);
- 80044e4:	4b15      	ldr	r3, [pc, #84]	; (800453c <u_turnf+0x22c>)
- 80044e6:	681b      	ldr	r3, [r3, #0]
- 80044e8:	2264      	movs	r2, #100	; 0x64
- 80044ea:	625a      	str	r2, [r3, #36]	; 0x24
+ 80044e0:	4b16      	ldr	r3, [pc, #88]	; (800453c <u_turnf+0x22c>)
+ 80044e2:	681b      	ldr	r3, [r3, #0]
+ 80044e4:	2264      	movs	r2, #100	; 0x64
+ 80044e6:	625a      	str	r2, [r3, #36]	; 0x24
 	__HAL_TIM_SET_COUNTER(&htim3, 100);
- 80044ec:	4b14      	ldr	r3, [pc, #80]	; (8004540 <u_turnf+0x230>)
- 80044ee:	681b      	ldr	r3, [r3, #0]
- 80044f0:	2264      	movs	r2, #100	; 0x64
- 80044f2:	625a      	str	r2, [r3, #36]	; 0x24
+ 80044e8:	4b15      	ldr	r3, [pc, #84]	; (8004540 <u_turnf+0x230>)
+ 80044ea:	681b      	ldr	r3, [r3, #0]
+ 80044ec:	2264      	movs	r2, #100	; 0x64
+ 80044ee:	625a      	str	r2, [r3, #36]	; 0x24
 	__HAL_TIM_SET_AUTORELOAD(&htim2, UINT16_MAX);
- 80044f4:	4b11      	ldr	r3, [pc, #68]	; (800453c <u_turnf+0x22c>)
- 80044f6:	681b      	ldr	r3, [r3, #0]
- 80044f8:	f64f 72ff 	movw	r2, #65535	; 0xffff
- 80044fc:	62da      	str	r2, [r3, #44]	; 0x2c
- 80044fe:	4b0f      	ldr	r3, [pc, #60]	; (800453c <u_turnf+0x22c>)
- 8004500:	f64f 72ff 	movw	r2, #65535	; 0xffff
- 8004504:	60da      	str	r2, [r3, #12]
+ 80044f0:	4b12      	ldr	r3, [pc, #72]	; (800453c <u_turnf+0x22c>)
+ 80044f2:	681b      	ldr	r3, [r3, #0]
+ 80044f4:	f64f 72ff 	movw	r2, #65535	; 0xffff
+ 80044f8:	62da      	str	r2, [r3, #44]	; 0x2c
+ 80044fa:	4b10      	ldr	r3, [pc, #64]	; (800453c <u_turnf+0x22c>)
+ 80044fc:	f64f 72ff 	movw	r2, #65535	; 0xffff
+ 8004500:	60da      	str	r2, [r3, #12]
 	__HAL_TIM_SET_AUTORELOAD(&htim3, UINT16_MAX);
- 8004506:	4b0e      	ldr	r3, [pc, #56]	; (8004540 <u_turnf+0x230>)
- 8004508:	681b      	ldr	r3, [r3, #0]
- 800450a:	f64f 72ff 	movw	r2, #65535	; 0xffff
- 800450e:	62da      	str	r2, [r3, #44]	; 0x2c
- 8004510:	4b0b      	ldr	r3, [pc, #44]	; (8004540 <u_turnf+0x230>)
- 8004512:	f64f 72ff 	movw	r2, #65535	; 0xffff
- 8004516:	60da      	str	r2, [r3, #12]
+ 8004502:	4b0f      	ldr	r3, [pc, #60]	; (8004540 <u_turnf+0x230>)
+ 8004504:	681b      	ldr	r3, [r3, #0]
+ 8004506:	f64f 72ff 	movw	r2, #65535	; 0xffff
+ 800450a:	62da      	str	r2, [r3, #44]	; 0x2c
+ 800450c:	4b0c      	ldr	r3, [pc, #48]	; (8004540 <u_turnf+0x230>)
+ 800450e:	f64f 72ff 	movw	r2, #65535	; 0xffff
+ 8004512:	60da      	str	r2, [r3, #12]
 }
- 8004518:	bf00      	nop
- 800451a:	3718      	adds	r7, #24
- 800451c:	46bd      	mov	sp, r7
- 800451e:	bd80      	pop	{r7, pc}
+ 8004514:	bf00      	nop
+ 8004516:	3718      	adds	r7, #24
+ 8004518:	46bd      	mov	sp, r7
+ 800451a:	bd80      	pop	{r7, pc}
+ 800451c:	f3af 8000 	nop.w
  8004520:	bbbbbbbc 	.word	0xbbbbbbbc
  8004524:	40929bbb 	.word	0x40929bbb
  8004528:	0800e460 	.word	0x0800e460
@@ -9249,9 +9249,9 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
  8004b4a:	4b49      	ldr	r3, [pc, #292]	; (8004c70 <go_straight+0x200>)
  8004b4c:	2201      	movs	r2, #1
  8004b4e:	701a      	strb	r2, [r3, #0]
-	oe2 = 120;
+	oe2 = 90;
  8004b50:	4b48      	ldr	r3, [pc, #288]	; (8004c74 <go_straight+0x204>)
- 8004b52:	2278      	movs	r2, #120	; 0x78
+ 8004b52:	225a      	movs	r2, #90	; 0x5a
  8004b54:	801a      	strh	r2, [r3, #0]
 		= right_sensor45
 		= left_sensor90
