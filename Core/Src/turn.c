@@ -87,7 +87,7 @@ void u_turnf(uint8_t *direction) {
 	uint16_t last = 2702;
 	while(last != TIM3->CNT){
 		last = TIM3->CNT;
-		HAL_Delay(50);
+		HAL_Delay(20);
 	}
 
 	uint16_t en = round(uturn_arc_en);
@@ -174,8 +174,8 @@ void turn_left45(uint8_t *direction) {
 		TIM1->CCR1 = speed - P;
 		TIM1->CCR2 = 0;
 	}
-	running_left_motor(0, 500);
-	running_right_motor(1, 500);
+	running_left_motor(0, 600);
+	running_right_motor(1, 600);
 	HAL_Delay(50);
 	brake(2);
 	__HAL_TIM_SET_COUNTER(&htim2, 100);
@@ -236,8 +236,8 @@ void turn_right45(uint8_t *direction) {
 		b = (10000 - TIM3->CNT);
 		#endif
 	}
-	running_left_motor(1, 500);
-	running_right_motor(0, 500);
+	running_left_motor(1, 700);
+	running_right_motor(0, 7004);
 	HAL_Delay(50);
 	brake(2);
 	__HAL_TIM_SET_COUNTER(&htim2, 100);
@@ -288,14 +288,14 @@ void turn_left90(uint8_t *direction) {
 
 	while(status != 0){
 		P = ((int32_t)(TIM3->CNT - 500) - (10000 - TIM2->CNT)) * 5;
-		TIM1->CCR3 = speed - 50 + P;
+		TIM1->CCR3 = speed + P;
 		TIM1->CCR4 = 0;
 		TIM1->CCR1 = speed - P;
 		TIM1->CCR2 = 0;
 	}
-	running_left_motor(0, 600);
-	running_right_motor(1, 600);
-	HAL_Delay(40);
+	running_left_motor(0, 700);
+	running_right_motor(1, 700);
+	HAL_Delay(50);
 	brake(2);
 	__HAL_TIM_SET_COUNTER(&htim2, 100);
 	__HAL_TIM_SET_COUNTER(&htim3, 100);
@@ -345,10 +345,10 @@ void turn_right90(uint8_t *direction) {
 	int32_t P;
 
 	TIM1->CCR3 = 0;
-	TIM1->CCR4 = 200;
+	TIM1->CCR4 = 250;
 	TIM1->CCR1 = 0;
-	TIM1->CCR2 = 200;
-	HAL_Delay(200);
+	TIM1->CCR2 = 250;
+	HAL_Delay(100);
 
 	while(status != 0){
 		P = ((int32_t)(10000 - TIM3->CNT) - ((int32_t)TIM2->CNT - 500)) * 5;
@@ -361,8 +361,8 @@ void turn_right90(uint8_t *direction) {
 		b = (10000 - TIM3->CNT);
 		#endif
 	}
-	running_left_motor(1, 500);
-	running_right_motor(0, 500);
+	running_left_motor(1, 700);
+	running_right_motor(0, 700);
 	HAL_Delay(50);
 	brake(2);
 	__HAL_TIM_SET_COUNTER(&htim2, 100);
@@ -391,7 +391,7 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 	status = straight;
 	old_Error = 0;
 	useIRSensor = true;
-	oe2 = 100;
+	oe2 = 120;
 	left_sensor45
 		= right_sensor45
 		= left_sensor90
@@ -481,23 +481,24 @@ void go_straight(double distance, bool brakee, int8_t next) { //millimeter
 
 
 void pid_normal(){
-	if((left_sensor0 > 180 || right_sensor0 > 180) && left_sensor45 < 310 && left_sensor90 < 180
-			&& right_sensor45 < 310 && right_sensor90 < 180){
-		if(left_sensor45 + right_sensor45 > 450){
+	if((left_sensor0 > 150 || right_sensor0 > 150) && left_sensor45 < 310 && left_sensor90 < HasleftWallValue_90
+			&& right_sensor45 < 310 && right_sensor90 < HasrightWallValue_90){
+		if(left_sensor45 + right_sensor45 > 500){
 			goto useEncoder;
 		}
+
 		Err = (int32_t)right_sensor45 - left_sensor45;
 		D = Err - old_Error;
 		old_Error = Err;
 		useIRSensor = true;
-	} else if((left_sensor0 > 180 || right_sensor0 > 180) && left_sensor45 < 310 && (left_sensor90 < 180 ||
-			left_sensor45 < 0)){
+	} else if((left_sensor0 > 150 || right_sensor0 > 150) && left_sensor45 < 310
+			&& left_sensor90 < HasleftWallValue_90){
 		Err = (int32_t)leftWallValue - left_sensor45;
 		D = Err - old_Error;
 		old_Error = Err;
 		useIRSensor = true;
-	} else if((left_sensor0 > 180 || right_sensor0 > 180) && right_sensor45 < 310 && (right_sensor90 < 180 ||
-			right_sensor45 < 0)){
+	} else if((left_sensor0 > 150 || right_sensor0 > 150) && right_sensor45 < 310
+			&& right_sensor90 < HasrightWallValue_90){
 		Err = (int32_t)right_sensor45 - rightWallValue;
 		D = Err - old_Error;
 		old_Error = Err;
@@ -525,9 +526,9 @@ void pid_normal(){
 		P = round(P_params[Rmode][1] * Err + D * 0);
 	}
 	if(Rmode == 1){
-		P = max(-100, min(P, 100));
+		P = max(-80, min(P, 80));
 	} else {
-		P = max(-150, min(P, 150));
+		P = max(-100, min(P, 100));
 	}
 	TIM1->CCR3 = 0;
 	TIM1->CCR4 = (uint16_t)speed0 + P;

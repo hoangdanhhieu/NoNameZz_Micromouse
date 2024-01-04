@@ -34,7 +34,7 @@ void running_OPPath(){
 				turnRightHere;
 				break;
 			default:
-				go_straight(shortestPath[i], 0, -1);
+				go_straight(shortestPath[i] + 20, 0, -1);
 		}
 	}
 	brake(2);
