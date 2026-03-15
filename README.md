@@ -6,7 +6,6 @@
 ## 📌 Giới thiệu (Overview)
 Dự án này là mã nguồn điều khiển robot tự hành giải mê cung (Micromouse) được phát triển vào năm 2 đại học. Robot có khả năng tự động khám phá mê cung, lập bản đồ và tìm ra đường đi ngắn nhất đến đích. 
 
-Đã đạt **Hạng 2 cuộc thi Robot giải mê cung** cấp Khoa tại trường Đại học 2023.
 
 ## 🛠 Phần cứng (Hardware)
 * **Vi điều khiển chính:** STM32F103C8T6 (ARM Cortex-M3).
